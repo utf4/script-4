@@ -374,7 +374,7 @@ func (e *ConsensusEngine) processMessage(msg interface{}) (endEpoch bool) {
 		}).Debug("Received block")
 		e.handleBlock(m)
 	case *core.AggregatedVotes:
-		// e.logger.WithFields(log.Fields{"lightning vote": m}).Debug("Received lightning vote")
+		e.logger.WithFields(log.Fields{"lightning vote": m}).Debug("Received lightning vote")
 		e.handleLightningVote(m)
 	case *core.EENVote:
 		// e.logger.WithFields(log.Fields{"elite edge node vote": m}).Debug("Received elite edge node vote")
