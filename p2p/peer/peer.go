@@ -221,8 +221,8 @@ func (peer *Peer) Handshake(sourceNodeInfo *p2ptypes.NodeInfo) error {
 
 	peer.nodeType = common.NodeType(peerType)
 
-	if(targetPeerNodeInfo.PubKey.Address() != viper.GetString(common.CfgGovAddress)) {
-		if(peer.nodeType == common.HexToAddress(common.NodeTypeBlockchainNode)) { //	NodeTypeBlockchainNode
+	if(targetPeerNodeInfo.PubKey.Address() != common.HexToAddress(viper.GetString(common.CfgGovAddress))) {
+		if(peer.nodeType == common.NodeTypeBlockchainNode) { //	NodeTypeBlockchainNode
 			err = core.ValidateLicense(targetPeerNodeInfo.PubKey.Address())
 		if err != nil {
 				peer.isLicenseValid = false
