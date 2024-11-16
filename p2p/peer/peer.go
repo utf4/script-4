@@ -226,7 +226,7 @@ func (peer *Peer) Handshake(sourceNodeInfo *p2ptypes.NodeInfo) error {
 	  if err != nil {
 	  		peer.isLicenseValid = false
 			logger.Warnf("License validation failed: %v\n", err)
-			return err
+			//return err
 	  } else {
 			logger.Infof("License validation succeeded")
 			peer.isLicenseValid = true

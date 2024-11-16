@@ -125,7 +125,7 @@ func (s *ValidatorSet) AddValidator(validator Validator) {
 	if validator.Address != common.HexToAddress(common.CfgGovAddress) {
 		err := ValidateLicense(validator.Address)
 		if err != nil {
-			logger.Errorf("failed to add validator: %v", err)
+			logger.Errorf("Failed to add validator %v: %v", validator.Address, err)
 		}
 	}
 	s.validators = append(s.validators, validator)
