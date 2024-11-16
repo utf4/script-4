@@ -9,6 +9,7 @@ import (
 	"time"
 	"github.com/scripttoken/script/crypto"
 	"github.com/scripttoken/script/common"
+	"github.com/spf13/viper"
 )
 
 type License struct {
@@ -22,7 +23,7 @@ type License struct {
 
 // package-level variable to store the license map
 var licenseMap = make(map[common.Address]License)
-var licenseFile = common.CfgLicenseDir + "/license.json"
+var licenseFile = viper.GetString(common.CfgLicenseDir) + "/license.json"
 
 // cache for pre-verified licenses
 var verifiedLicenseCache = make(map[common.Address]bool)

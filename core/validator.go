@@ -11,6 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/scripttoken/script/common"
+	"github.com/spf13/viper"
 )
 
 var logger *log.Entry = log.WithFields(log.Fields{"prefix": "core"})
@@ -122,8 +123,8 @@ func (s *ValidatorSet) GetValidator(id common.Address) (Validator, error) {
 
 // AddValidator adds a validator to the validator set.
 func (s *ValidatorSet) AddValidator(validator Validator) {
-	logger.Printf("gov address: %v", common.CfgGovAddress)
-	if validator.Address != common.HexToAddress(common.CfgGovAddress) {
+	logger.Printf("gov address: %v", viper.GetString(common.CfgGovAddress))
+	if validator.Address != common.HexToAddress(viper.GetString(common.CfgGovAddress)) {
 		err := ValidateLicense(validator.Address)
 		if err != nil {
 			logger.Errorf("Failed to add validator %v: %v", validator.Address, err)
@@ -148,8 +149,8 @@ func (s *ValidatorSet) HasMajorityVotes(votes []Vote) bool {
 	for _, vote := range votes {
 		validator, err := s.GetValidator(vote.ID)
 		if err == nil {
-			logger.Printf("gov address: %v", common.CfgGovAddress)
-			if validator.Address != common.HexToAddress(common.CfgGovAddress) {
+			logger.Printf("gov address: %v", viper.GetString(common.CfgGovAddress))
+			if validator.Address != common.HexToAddress(viper.GetString(common.CfgGovAddress)) {
 				if err := ValidateLicense(validator.Address); err != nil {
 					continue // skip validator
 				}
