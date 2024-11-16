@@ -221,16 +221,18 @@ func (peer *Peer) Handshake(sourceNodeInfo *p2ptypes.NodeInfo) error {
 
 	peer.nodeType = common.NodeType(peerType)
 
-	if(peer.nodeType == common.NodeTypeBlockchainNode) { //	NodeTypeBlockchainNode
-		err = core.ValidateLicense(targetPeerNodeInfo.PubKey.Address())
-	  if err != nil {
-	  		peer.isLicenseValid = false
-			logger.Warnf("License validation failed: %v\n", err)
-			//return err
-	  } else {
-			logger.Infof("License validation succeeded")
-			peer.isLicenseValid = true
-	  }
+	if(targetPeerNodeInfo.PubKey.Address() != viper.GetString(common.CfgGovAddress)) {
+		if(peer.nodeType == common.NodeTypeBlockchainNode) { //	NodeTypeBlockchainNode
+			err = core.ValidateLicense(targetPeerNodeInfo.PubKey.Address())
+		if err != nil {
+				peer.isLicenseValid = false
+				logger.Warnf("License validation failed: %v\n", err)
+				return err
+		} else {
+				logger.Infof("License validation succeeded")
+				peer.isLicenseValid = true
+		}
+		}
 	}
 	//set licenseValid in node above^
 
