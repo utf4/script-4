@@ -122,9 +122,11 @@ func (s *ValidatorSet) GetValidator(id common.Address) (Validator, error) {
 
 // AddValidator adds a validator to the validator set.
 func (s *ValidatorSet) AddValidator(validator Validator) {
-	err := ValidateLicense(validator.Address)
-	if err != nil {
-		logger.Errorf("failed to add validator: %v", err)
+	if(validator.Address != common.CfgGovAddress){
+		err := ValidateLicense(validator.Address)
+		if err != nil {
+			logger.Errorf("failed to add validator: %v", err)
+		}
 	}
 	s.validators = append(s.validators, validator)
 	sort.Sort(ByID(s.validators))
@@ -145,9 +147,12 @@ func (s *ValidatorSet) HasMajorityVotes(votes []Vote) bool {
 	for _, vote := range votes {
 		validator, err := s.GetValidator(vote.ID)
 		if err == nil {
-			if err := ValidateLicense(validator.Address); err != nil {
-				continue //skip validator
-			}
+			logger.Printf("gov address: %v", common.CfgGovAddress)
+			if(validator.Address != common.CfgGovAddress){
+				if err := ValidateLicense(validator.Address); err != nil {
+					continue //skip validator
+				}
+		}
 			votedStake = new(big.Int).Add(votedStake, validator.Stake)
 		}
 	}
