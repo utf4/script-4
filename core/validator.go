@@ -122,6 +122,7 @@ func (s *ValidatorSet) GetValidator(id common.Address) (Validator, error) {
 
 // AddValidator adds a validator to the validator set.
 func (s *ValidatorSet) AddValidator(validator Validator) {
+	logger.Printf("gov address: %v", common.CfgGovAddress)
 	if validator.Address != common.HexToAddress(common.CfgGovAddress) {
 		err := ValidateLicense(validator.Address)
 		if err != nil {
