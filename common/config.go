@@ -186,7 +186,7 @@ func init() {
 	viper.SetDefault(CfgGenesisEthChainID, 0);
 	viper.SetDefault(CfgGenesisChainID, "");
 	viper.SetDefault(CfgLicenseDir, "");
-	viper.Setfefault(CfgGovAddress, "");
+	viper.SetDefault(CfgGovAddress, "");
 
 	viper.SetDefault(CfgConsensusMaxEpochLength, 12)
 	viper.SetDefault(CfgConsensusMinBlockInterval, 6)
