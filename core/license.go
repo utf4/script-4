@@ -1,6 +1,7 @@
 package core
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -13,12 +14,12 @@ import (
 )
 
 type License struct {
-	Issuer    common.Address   // Issuer's address
-	Licensee  common.Address   // Licensee's address
-	From      uint64           // Start time (unix timestamp)
-	To        uint64           // End time (unix timestamp)
-	Items     []string         // Items covered by the license
-	Signature *crypto.Signature   // Signature of the license
+	Issuer    common.Address `json:"issuer"`    // Issuer's address
+	Licensee  common.Address `json:"licensee"`  // Licensee's address
+	From      string         `json:"from"`      // Start time (ISO 8601 date)
+	To        string         `json:"to"`        // End time (ISO 8601 date)
+	Items     []string       `json:"items"`     // Items covered by the license
+	Signature string         `json:"signature"` // Base64-encoded signature
 }
 
 // package-level variable to store the license map
@@ -56,6 +57,11 @@ func ReadFile(filename string) (map[common.Address]License, error) {
 	verifiedLicenseCache = make(map[common.Address]bool) // clear previous cache
 
 	for _, license := range licenses {
+		decodedSig, err := base64.StdEncoding.DecodeString(license.Signature)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to decode base64 signature: %v", err)
+		}
+		licenses[i].Signature = string(decodedSig)
 		licenseMap[license.Licensee] = license
 	}
 

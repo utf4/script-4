@@ -20,7 +20,7 @@ type LicenseJSON struct {
 	From      uint64            `json:"from"`      // Start time (unix timestamp)
 	To        uint64            `json:"to"`        // End time (unix timestamp)
 	Items     []string          `json:"items"`     // Items covered by the license
-	Signature *crypto.Signature `json:"signature"` // Signature of the license
+	Signature string 				 `json:"signature"` // Signature of the license
 }
 
 // NewLicenseJSON creates a new LicenseJSON from a License.
