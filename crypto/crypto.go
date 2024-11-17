@@ -175,6 +175,10 @@ type Signature struct {
 	data common.Bytes
 }
 
+func NewSignature(data common.Bytes) *Signature {
+	return &Signature{data: data}
+}
+
 var _ rlp.Encoder = (*Signature)(nil)
 
 // EncodeRLP implements RLP Encoder interface.

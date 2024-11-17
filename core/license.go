@@ -70,9 +70,7 @@ func ConvertStringToSignature(signatureStr string) (*crypto.Signature, error) {
 		return nil, fmt.Errorf("failed to decode base64 signature: %v", err)
 	}
 
-	signature := &crypto.Signature{
-		data: decodedSig,
-	}
+	signature := crypto.NewSignature(decodedSig)
 
 	return signature, nil
 }
