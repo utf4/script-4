@@ -8,7 +8,6 @@ import (
 	"os"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/scripttoken/script/crypto"
 	"github.com/scripttoken/script/common"
 	"github.com/spf13/viper"
@@ -33,16 +32,13 @@ var verifiedLicenseCache = make(map[common.Address]bool)
 
 // read license file
 func ReadFile(filename string) (map[common.Address]License, error) {
-
-	log.Println("Reading license file: ", licenseFile)
-	log.Println("License directory: ", viper.GetString(common.CfgLicenseDir))
 	if(filename == "") {
 		filename = licenseFile
 	}
 
 	file, err := os.Open(filename)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open file: %v", err)
+		return nil, fmt.Errorf("failed to open file: %v at %v", err, viper.GetString(common.CfgLicenseDir))
 	}
 	defer file.Close()
 
