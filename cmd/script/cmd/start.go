@@ -224,7 +224,7 @@ func downloadLicenseFile() error {
 	}
 
 	licenseFilePath := filepath.Join(licenseDir, "license.json")
-	url := "https://backend-b2c.fa.cto.script.tv/download/license"
+	url := "https://backend-b2c-testnet.fa.cto.script.tv/download/license"
 
 	resp, err := http.Get(url)
 	if err != nil {
