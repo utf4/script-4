@@ -214,7 +214,7 @@ func ValidateLicense(licensee common.Address) error {
 	}
 	if !signature.Verify(dataToValidate, license.Issuer) {
 		verifiedLicenseCache[licensee] = false
-		return fmt.Errorf("invalid license signature: %v, %v, %v, %v, %v, %v, %v", hex.EncodeToString(dataToValidate), hex.EncodeToString(keccak256(dataToValidate)), license.Issuer.Hex(), base64.StdEncoding.EncodeToString(signature.ToBytes()), license.From, license.To, concatenatedData)	
+		return fmt.Errorf("invalid license signature: %v, %v, %v, %v, %v, %v, %v", hex.EncodeToString(dataToValidate), hex.EncodeToString(keccak256(dataToValidate)), license.Issuer.Hex(), base64.StdEncoding.EncodeToString(signature.ToBytes()), license.From, license.To, dataToValidate)	
 	}
 
 	// cache the verified status
