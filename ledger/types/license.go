@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/scripttoken/script/common"
-	"github.com/scripttoken/script/crypto"
 	"github.com/scripttoken/script/core"
 )
 
