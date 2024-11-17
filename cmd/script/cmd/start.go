@@ -3,11 +3,13 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
@@ -50,6 +52,7 @@ func runStart(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatalf("Failed to load or create key: %v", err)
 	}
+
 
 	// Open database
 	dbPath := viper.GetString(common.CfgDataPath)
@@ -164,6 +167,18 @@ func runStart(cmd *cobra.Command, args []string) {
 		ChainCorrectionPath: chainCorrectionPath,
 	}
 
+	// Download license.json
+	err = downloadLicenseFile()
+	if err != nil {
+		log.Fatalf("Failed to download license file: %v", err)
+	}
+	
+	// Read license file
+	_, err = core.ReadFile("")
+	if err != nil {
+		log.Fatalf("Failed to read license file: %v", err)
+	}
+
 	n := node.NewNode(params)
 
 	c := make(chan os.Signal)
@@ -202,6 +217,39 @@ func runStart(cmd *cobra.Command, args []string) {
 	printExitBanner()
 }
 
+func downloadLicenseFile() error {
+	licenseDir := viper.GetString(common.CfgLicenseDir)
+	if licenseDir == "" {
+		return fmt.Errorf("license directory is not set")
+	}
+
+	licenseFilePath := filepath.Join(licenseDir, "license.json")
+	url := "https://backend-b2c.fa.cto.script.tv/download/license"
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return fmt.Errorf("failed to download license file: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("failed to download license file: received status code %d", resp.StatusCode)
+	}
+
+	out, err := os.Create(licenseFilePath)
+	if err != nil {
+		return fmt.Errorf("failed to create license file: %v", err)
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to write license file: %v", err)
+	}
+
+	return nil
+}
+
 func loadOrCreateKey() (*crypto.PrivateKey, error) {
 	keyPath := viper.GetString(common.CfgKeyPath)
 	if keyPath == "" {
@@ -209,7 +257,7 @@ func loadOrCreateKey() (*crypto.PrivateKey, error) {
 	}
 
 	keysDir := path.Join(keyPath, "key")
-//	keystore, err := ks.NewKeystoreEncrypted(keysDir, ks.StandardScryptN, ks.StandardScryptP)
+	//	keystore, err := ks.NewKeystoreEncrypted(keysDir, ks.StandardScryptN, ks.StandardScryptP)
 	keystore, err := ks.NewKeystorePlain(keysDir)
 	if err != nil {
 		log.Fatalf("Failed to create key store: %v", err)
