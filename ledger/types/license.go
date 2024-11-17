@@ -17,8 +17,8 @@ type LicenseWrapper struct {
 type LicenseJSON struct {
 	Issuer    common.Address    `json:"issuer"`    // Issuer's address
 	Licensee  common.Address    `json:"licensee"`  // Licensee's address
-	From      *common.JSONBig    `json:"from"`      // Start time (unix timestamp)
-	To        *common.JSONBig    `json:"to"`        // End time (unix timestamp)
+	From      uint64            `json:"from"`      // Start time (unix timestamp)
+	To        uint64            `json:"to"`        // End time (unix timestamp)
 	Items     []string          `json:"items"`     // Items covered by the license
 	Signature *crypto.Signature `json:"signature"` // Signature of the license
 }
@@ -28,8 +28,8 @@ func NewLicenseJSON(l core.License) LicenseJSON {
 	return LicenseJSON{
 		Issuer:    l.Issuer,
 		Licensee:  l.Licensee,
-		From:      (*common.JSONBig)(l.From),
-		To:        (*common.JSONBig)(l.To),
+		From:      l.From,
+		To:        l.To,
 		Items:     l.Items,
 		Signature: l.Signature,
 	}
@@ -40,8 +40,8 @@ func (l LicenseJSON) License() core.License {
 	return core.License{
 		Issuer:    l.Issuer,
 		Licensee:  l.Licensee,
-		From:      l.From.ToInt(),
-		To:        l.To.ToInt(),
+		From:      l.From,
+		To:        l.To,
 		Items:     l.Items,
 		Signature: l.Signature,
 	}

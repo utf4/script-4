@@ -1,7 +1,6 @@
 package core
 
 import (
-	"math/big"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -11,15 +10,14 @@ import (
 	"github.com/scripttoken/script/crypto"
 	"github.com/scripttoken/script/common"
 	"github.com/spf13/viper"
-	
 )
 
 type License struct {
 	Issuer    common.Address   // Issuer's address
 	Licensee  common.Address   // Licensee's address
-	From      *big.Int        // Start time (unix timestamp)
-	To        *big.Int        // End time (unix timestamp)
-	Items     []string        // Items covered by the license
+	From      uint64           // Start time (unix timestamp)
+	To        uint64           // End time (unix timestamp)
+	Items     []string         // Items covered by the license
 	Signature *crypto.Signature   // Signature of the license
 }
 
@@ -32,7 +30,7 @@ var verifiedLicenseCache = make(map[common.Address]bool)
 
 // read license file
 func ReadFile(filename string) (map[common.Address]License, error) {
-	if(filename == "") {
+	if filename == "" {
 		filename = viper.GetString(common.CfgLicenseDir) + "/license.json"
 	}
 
@@ -99,9 +97,9 @@ func WriteLicenseFile(license License, filename string) error {
 }
 
 func ValidateIncomingLicense(license License) error {
-	currentTime := big.NewInt(time.Now().Unix())
+	currentTime := uint64(time.Now().Unix())
 
-	if license.From.Cmp(currentTime) > 0 || license.To.Cmp(currentTime) < 0 {
+	if license.From > currentTime || license.To < currentTime {
 		return fmt.Errorf("current time is outside the valid license period")
 	}
 
@@ -134,9 +132,9 @@ func ValidateLicense(licensee common.Address) error {
 		return fmt.Errorf("No license found for the given licensee public key")
 	}
 
-	currentTime := big.NewInt(time.Now().Unix())
+	currentTime := uint64(time.Now().Unix())
 
-	if license.From.Cmp(currentTime) > 0 || license.To.Cmp(currentTime) < 0 {
+	if license.From > currentTime || license.To < currentTime {
 		verifiedLicenseCache[licensee] = false
 		return fmt.Errorf("current time is outside the valid license period")
 	}
@@ -168,8 +166,8 @@ func concatenateLicenseData(license License) []byte {
 	// Convert fields to byte slices or strings
 	issuerBytes := []byte(license.Issuer.Hex())               
 	licenseeBytes := []byte(license.Licensee.Hex())           
-	fromBytes := license.From.Bytes()                        
-	toBytes := license.To.Bytes()                             
+	fromBytes := []byte(fmt.Sprintf("%d", license.From))                        
+	toBytes := []byte(fmt.Sprintf("%d", license.To))                             
 
 	// Concatenate the items list (assuming it's strings)
 	itemsBytes := []byte{}
@@ -197,9 +195,9 @@ func startCacheUpdater(interval time.Duration) {
 }
 
 func updateCache() {
-	currentTime := big.NewInt(time.Now().Unix())
+	currentTime := uint64(time.Now().Unix())
 	for licensee, license := range licenseMap {
-		if license.From.Cmp(currentTime) > 0 || license.To.Cmp(currentTime) < 0 {
+		if license.From > currentTime || license.To < currentTime {
 			delete(verifiedLicenseCache, licensee)
 		}
 	}
