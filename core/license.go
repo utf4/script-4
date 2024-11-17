@@ -3,6 +3,7 @@ package core
 import (
 	"encoding/base64"
 	"encoding/json"
+	"encoding/hex"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -194,8 +195,7 @@ func ValidateLicense(licensee common.Address) error {
 	}
 	if !signature.Verify(dataToValidate, license.Issuer) {
 		verifiedLicenseCache[licensee] = false
-		return fmt.Errorf("invalid license signature")
-	}
+		return fmt.Errorf("invalid license signature: %v, %v, %v", hex.EncodeToString(dataToValidate), license.Issuer.Hex(), hex.EncodeToString(signature.ToBytes()))	}
 
 	// cache the verified status
 	verifiedLicenseCache[licensee] = true
