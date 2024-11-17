@@ -13,6 +13,15 @@ import (
 	"github.com/scripttoken/script/crypto"
 )
 
+type LicenseReadFile struct {
+	Issuer    common.Address `json:"issuer"`    // Issuer's address
+	Licensee  common.Address `json:"licensee"`  // Licensee's address
+	From      string         `json:"from"`      // Start time (unix timestamp)
+	To        string         `json:"to"`        // End time (unix timestamp)
+	Items     []string       `json:"items"`     // Items covered by the license
+	Signature string         `json:"signature"` // Base64-encoded signature
+}
+
 type License struct {
 	Issuer    common.Address `json:"issuer"`    // Issuer's address
 	Licensee  common.Address `json:"licensee"`  // Licensee's address
@@ -46,7 +55,7 @@ func ReadFile(filename string) (map[common.Address]License, error) {
 		return nil, fmt.Errorf("Failed to read file: %v", err)
 	}
 
-	var licenses []License
+	var licenses []LicenseReadFile
 
 	err = json.Unmarshal(bytes, &licenses)
 	if err != nil {
@@ -56,7 +65,26 @@ func ReadFile(filename string) (map[common.Address]License, error) {
 	licenseMap = make(map[common.Address]License) // clear previous map
 	verifiedLicenseCache = make(map[common.Address]bool) // clear previous cache
 
-	for _, license := range licenses {
+	for _, licenseRF := range licenses {
+		from, err := strconv.ParseUint(licenseRF.From, 10, 64)
+      if err != nil {
+         return nil, fmt.Errorf("Failed to parse 'From' field: %v", err)
+      }
+
+      to, err := strconv.ParseUint(licenseRF.To, 10, 64)
+      if err != nil {
+         return nil, fmt.Errorf("Failed to parse 'To' field: %v", err)
+      }
+
+		license := License{
+			Issuer:    licenseRF.Issuer,
+			Licensee:  licenseRF.Licensee,
+			From:      from,
+			To:        to,
+			Items:     licenseRF.Items,
+			Signature: licenseRF.Signature,
+	  }
+
 		licenseMap[license.Licensee] = license
 	}
 
