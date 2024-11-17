@@ -8,16 +8,16 @@ import (
 	"os"
 	"time"
 
-	"github.com/scripttoken/script/crypto"
 	"github.com/scripttoken/script/common"
 	"github.com/spf13/viper"
+	"github.com/scripttoken/script/crypto"
 )
 
 type License struct {
 	Issuer    common.Address `json:"issuer"`    // Issuer's address
 	Licensee  common.Address `json:"licensee"`  // Licensee's address
-	From      string         `json:"from"`      // Start time (ISO 8601 date)
-	To        string         `json:"to"`        // End time (ISO 8601 date)
+	From      uint64         `json:"from"`      // Start time (unix timestamp)
+	To        uint64         `json:"to"`        // End time (unix timestamp)
 	Items     []string       `json:"items"`     // Items covered by the license
 	Signature string         `json:"signature"` // Base64-encoded signature
 }
@@ -57,15 +57,24 @@ func ReadFile(filename string) (map[common.Address]License, error) {
 	verifiedLicenseCache = make(map[common.Address]bool) // clear previous cache
 
 	for _, license := range licenses {
-		decodedSig, err := base64.StdEncoding.DecodeString(license.Signature)
-		if err != nil {
-			return nil, fmt.Errorf("Failed to decode base64 signature: %v", err)
-		}
-		licenses[i].Signature = string(decodedSig)
 		licenseMap[license.Licensee] = license
 	}
 
 	return licenseMap, nil
+}
+
+// ConvertStringToSignature converts a base64-encoded string to a Signature object.
+func ConvertStringToSignature(signatureStr string) (*crypto.Signature, error) {
+	decodedSig, err := base64.StdEncoding.DecodeString(signatureStr)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode base64 signature: %v", err)
+	}
+
+	signature := &crypto.Signature{
+		data: decodedSig,
+	}
+
+	return signature, nil
 }
 
 func WriteLicenseFile(license License, filename string) error {
@@ -74,7 +83,7 @@ func WriteLicenseFile(license License, filename string) error {
 		return fmt.Errorf("license validation failed: %v", err)
 	}
 
-	if(filename == "") {
+	if filename == "" {
 		filename = viper.GetString(common.CfgLicenseDir) + "/license.json"
 	}
 
@@ -115,7 +124,11 @@ func ValidateIncomingLicense(license License) error {
 
 	dataToSign := concatenateLicenseData(license)
 
-	if !license.Signature.Verify(dataToSign, license.Issuer) {
+	signature, err := ConvertStringToSignature(license.Signature)
+	if err != nil {
+		return fmt.Errorf("failed to convert string to signature: %v", err)
+	}
+	if !signature.Verify(dataToSign, license.Issuer) {
 		return fmt.Errorf("invalid license signature")
 	}
 
@@ -147,7 +160,11 @@ func ValidateLicense(licensee common.Address) error {
 
 	dataToValidate := concatenateLicenseData(license)
 
-	if !license.Signature.Verify(dataToValidate, license.Issuer) {
+	signature, err := ConvertStringToSignature(license.Signature)
+	if err != nil {
+		return fmt.Errorf("failed to convert string to signature: %v", err)
+	}
+	if !signature.Verify(dataToValidate, license.Issuer) {
 		verifiedLicenseCache[licensee] = false
 		return fmt.Errorf("invalid license signature")
 	}
@@ -170,10 +187,10 @@ func isLicenseForValidatorNode(items []string) bool {
 
 func concatenateLicenseData(license License) []byte {
 	// Convert fields to byte slices or strings
-	issuerBytes := []byte(license.Issuer.Hex())               
-	licenseeBytes := []byte(license.Licensee.Hex())           
-	fromBytes := []byte(fmt.Sprintf("%d", license.From))                        
-	toBytes := []byte(fmt.Sprintf("%d", license.To))                             
+	issuerBytes := []byte(license.Issuer.Hex())
+	licenseeBytes := []byte(license.Licensee.Hex())
+	fromBytes := []byte(fmt.Sprintf("%d", license.From))
+	toBytes := []byte(fmt.Sprintf("%d", license.To))
 
 	// Concatenate the items list (assuming it's strings)
 	itemsBytes := []byte{}
