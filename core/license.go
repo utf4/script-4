@@ -67,15 +67,17 @@ func ReadFile(filename string) (map[common.Address]License, error) {
 	verifiedLicenseCache = make(map[common.Address]bool) // clear previous cache
 
 	for _, licenseRF := range licenses {
-		from, err := strconv.ParseUint(licenseRF.From, 10, 64)
-      if err != nil {
-         return nil, fmt.Errorf("Failed to parse 'From' field: %v", err)
-      }
+		fromTime, err := time.Parse(time.RFC3339, licenseRF.From)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to parse 'From' field: %v", err)
+		}
+		from := uint64(fromTime.Unix())
 
-      to, err := strconv.ParseUint(licenseRF.To, 10, 64)
-      if err != nil {
-         return nil, fmt.Errorf("Failed to parse 'To' field: %v", err)
-      }
+		toTime, err := time.Parse(time.RFC3339, licenseRF.To)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to parse 'To' field: %v", err)
+		}
+		to := uint64(toTime.Unix())
 
 		license := License{
 			Issuer:    licenseRF.Issuer,
