@@ -33,12 +33,12 @@ var verifiedLicenseCache = make(map[common.Address]bool)
 // read license file
 func ReadFile(filename string) (map[common.Address]License, error) {
 	if(filename == "") {
-		filename = licenseFile
+		filename = viper.GetString(common.CfgLicenseDir) + "/license.json"
 	}
 
 	file, err := os.Open(filename)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open file: %v at %v", err, viper.GetString(common.CfgLicenseDir))
+		return nil, fmt.Errorf("Failed to open file: %v at %v", err, viper.GetString(common.CfgLicenseDir))
 	}
 	defer file.Close()
 
@@ -71,7 +71,7 @@ func WriteLicenseFile(license License, filename string) error {
 	}
 
 	if(filename == "") {
-		filename = licenseFile
+		filename = viper.GetString(common.CfgLicenseDir) + "/license.json"
 	}
 
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
