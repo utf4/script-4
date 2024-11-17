@@ -97,18 +97,20 @@ func runStart(cmd *cobra.Command, args []string) {
 		}
 	}
 
+		log.Println("Downloading license file...")
 		// Download license.json
 		err = downloadLicenseFile()
 		if err != nil {
 			log.Errorf("Failed to download license file: %v", err)
 		}
 		
+		log.Println("Reading license file...")
 		// Read license file
 		_, err = core.ReadFile("")
 		if err != nil {
 			log.Errorf("Failed to read license file: %v", err)
 		}
-		
+
 	if skipLoadSnapshot && !viper.GetBool(common.CfgForceValidateSnapshot) {
 		log.Println("Skip validating snapshot")
 	} else {
