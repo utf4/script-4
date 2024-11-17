@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"io"
 	"net/http"
@@ -95,6 +96,19 @@ func runStart(cmd *cobra.Command, args []string) {
 			}
 		}
 	}
+
+		// Download license.json
+		err = downloadLicenseFile()
+		if err != nil {
+			log.Errorf("Failed to download license file: %v", err)
+		}
+		
+		// Read license file
+		_, err = core.ReadFile("")
+		if err != nil {
+			log.Errorf("Failed to read license file: %v", err)
+		}
+		
 	if skipLoadSnapshot && !viper.GetBool(common.CfgForceValidateSnapshot) {
 		log.Println("Skip validating snapshot")
 	} else {
@@ -167,17 +181,7 @@ func runStart(cmd *cobra.Command, args []string) {
 		ChainCorrectionPath: chainCorrectionPath,
 	}
 
-	// Download license.json
-	err = downloadLicenseFile()
-	if err != nil {
-		log.Fatalf("Failed to download license file: %v", err)
-	}
-	
-	// Read license file
-	_, err = core.ReadFile("")
-	if err != nil {
-		log.Fatalf("Failed to read license file: %v", err)
-	}
+
 
 	n := node.NewNode(params)
 
@@ -226,7 +230,14 @@ func downloadLicenseFile() error {
 	licenseFilePath := filepath.Join(licenseDir, "license.json")
 	url := "https://backend-b2c-testnet.fa.cto.script.tv/download/license"
 
-	resp, err := http.Get(url)
+	// Create a custom HTTP client with disabled SSL verification
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
+
+	resp, err := client.Get(url)
 	if err != nil {
 		return fmt.Errorf("failed to download license file: %v", err)
 	}
@@ -257,6 +268,7 @@ func loadOrCreateKey() (*crypto.PrivateKey, error) {
 	}
 
 	keysDir := path.Join(keyPath, "key")
+	log.Println("Key directory: ", keysDir)
 	//	keystore, err := ks.NewKeystoreEncrypted(keysDir, ks.StandardScryptN, ks.StandardScryptP)
 	keystore, err := ks.NewKeystorePlain(keysDir)
 	if err != nil {
