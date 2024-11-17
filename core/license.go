@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"time"
+	"strconv"
 
 	"github.com/scripttoken/script/common"
 	"github.com/spf13/viper"
@@ -68,7 +69,7 @@ func ReadFile(filename string) (map[common.Address]License, error) {
 	verifiedLicenseCache = make(map[common.Address]bool) // clear previous cache
 
 	for _, licenseRF := range licenses {
-		fromTime, err := time.Parse(time.RFC3339, licenseRF.From)
+		/*fromTime, err := time.Parse(time.RFC3339, licenseRF.From)
 		if err != nil {
 			return nil, fmt.Errorf("Failed to parse 'From' field: %v", err)
 		}
@@ -78,7 +79,16 @@ func ReadFile(filename string) (map[common.Address]License, error) {
 		if err != nil {
 			return nil, fmt.Errorf("Failed to parse 'To' field: %v", err)
 		}
-		to := uint64(toTime.Unix())
+		to := uint64(toTime.Unix())*/
+		from, err := strconv.ParseInt(licenseRF.From, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to parse 'From' field: %v", err)
+		}
+
+		to, err := strconv.ParseInt(licenseRF.To, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to parse 'To' field: %v", err)
+		}
 
 		license := License{
 			Issuer:    licenseRF.Issuer,
