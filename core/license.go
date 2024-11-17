@@ -34,8 +34,8 @@ var verifiedLicenseCache = make(map[common.Address]bool)
 // read license file
 func ReadFile(filename string) (map[common.Address]License, error) {
 
-	logger.Println("Reading license file: ", licenseFile)
-	logger.Printlh("License directory: ", viper.GetString(common.CfgLicenseDir))
+	log.Println("Reading license file: ", licenseFile)
+	log.Println("License directory: ", viper.GetString(common.CfgLicenseDir))
 	if(filename == "") {
 		filename = licenseFile
 	}
