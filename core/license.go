@@ -10,6 +10,7 @@ import (
 	"github.com/scripttoken/script/crypto"
 	"github.com/scripttoken/script/common"
 	"github.com/spf13/viper"
+	log "github.com/sirupsen/logrus"
 )
 
 type License struct {
@@ -31,7 +32,8 @@ var verifiedLicenseCache = make(map[common.Address]bool)
 // read license file
 func ReadFile(filename string) (map[common.Address]License, error) {
 
-	fmt.Println("Reading license file: ", licenseFile)
+	log.Println("Reading license file: ", licenseFile)
+	log.Printlh("License directory: ", viper.GetString(common.CfgLicenseDir))
 	if(filename == "") {
 		filename = licenseFile
 	}
