@@ -12,6 +12,7 @@ import (
 	"github.com/scripttoken/script/common"
 	"github.com/spf13/viper"
 	"github.com/scripttoken/script/crypto"
+	"github.com/scripttoken/script/crypto/sha3"
 )
 
 type LicenseReadFile struct {
@@ -162,6 +163,14 @@ func ValidateIncomingLicense(license License) error {
 	}
 
 	return nil
+}
+
+func keccak256(data ...[]byte) []byte {
+	d := sha3.NewKeccak256()
+	for _, b := range data {
+		d.Write(b)
+	}
+	return d.Sum(nil)
 }
 
 // validate license for a public key
