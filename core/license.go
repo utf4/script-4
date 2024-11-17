@@ -93,8 +93,8 @@ func ReadFile(filename string) (map[common.Address]License, error) {
 		license := License{
 			Issuer:    licenseRF.Issuer,
 			Licensee:  licenseRF.Licensee,
-			From:      from,
-			To:        to,
+			From:      uint64(from),
+			To:        uint64(to),
 			Items:     licenseRF.Items,
 			Signature: licenseRF.Signature,
 	  }
