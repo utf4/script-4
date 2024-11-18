@@ -186,13 +186,9 @@ func keccak256(data ...[]byte) []byte {
 // validate license for a public key
 func ValidateLicense(licensee common.Address) error {
 	// Check cache first
-	if verified, exists := verifiedLicenseCache[licensee]; exists {
-		if verified {
-			return nil // License is already verified
-		} else {
-			return fmt.Errorf("license is not verified")
-		}
-	}
+	if _, exists := verifiedLicenseCache[licensee]; exists {
+		return nil // License exists in the cache
+  }
 
 	license, exists := licenseMap[licensee]
 	if !exists {
