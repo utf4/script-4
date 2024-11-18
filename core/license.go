@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 	"strconv"
+	"strings"
 
 	"github.com/scripttoken/script/common"
 	"github.com/spf13/viper"
@@ -235,8 +236,8 @@ func isLicenseForValidatorNode(items []string) bool {
 
 func concatenateLicenseData(license License) []byte {
 	// Convert fields to byte slices or strings
-	issuerBytes := []byte(license.Issuer.Hex())
-	licenseeBytes := []byte(license.Licensee.Hex())
+	issuerBytes := []byte(strings.ToUpper(license.Issuer.Hex()))
+	licenseeBytes := []byte(strings.ToUpper(license.Licensee.Hex()))
 	fromBytes := []byte(fmt.Sprintf("%d", license.From))
 	toBytes := []byte(fmt.Sprintf("%d", license.To))
 
