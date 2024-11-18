@@ -8,6 +8,7 @@ import (
 	"io"
 	"math/big"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/scripttoken/script/common"
 	"github.com/scripttoken/script/common/hexutil"
 	"github.com/scripttoken/script/rlp"
@@ -232,30 +233,37 @@ func (sig *Signature) IsEmpty() bool {
 // RecoverSignerAddress recovers the address of the signer for the given message
 func (sig *Signature) RecoverSignerAddress(msg common.Bytes) (common.Address, error) {
 	msgHash := keccak256(msg)
+	log.Println("CRYPTO: %x", msgHash)
 	recoveredUncompressedPubKey, err := ecrecover(msgHash, sig.ToBytes())
 	if err != nil {
+		log.Println("CRYPTO: %v", err)
 		return common.Address{}, err
 	}
 
 	pk, err := PublicKeyFromBytes(recoveredUncompressedPubKey)
 	if err != nil {
+		log.Println("CRYPTO: %v", err)
 		return common.Address{}, err
 	}
 
 	address := pk.Address()
+	log.Println("CRYPTO: %x", address)
 	return address, nil
 }
 
 // Verify verifies the signature with given raw message and address.
 func (sig *Signature) Verify(msg common.Bytes, addr common.Address) bool {
 	if sig == nil || sig.IsEmpty() {
+		log.Println("CRYPTO: sig empty")
 		return false
 	}
 	recoveredAddress, err := sig.RecoverSignerAddress(msg)
 	if err != nil {
+		log.Println("CRYPTO: addr not rec")
 		return false
 	}
 	if recoveredAddress != addr {
+		log.Println("CRYPTO: address mismatch")
 		return false
 	}
 	return true
