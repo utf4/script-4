@@ -266,6 +266,7 @@ func (sig *Signature) Verify(msg common.Bytes, addr common.Address) bool {
 		log.Println("CRYPTO: address mismatch")
 		return false
 	}
+	log.Println("CRYPTO: all good. verified.")
 	return true
 }
 
