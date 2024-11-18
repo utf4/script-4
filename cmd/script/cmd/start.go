@@ -240,6 +240,8 @@ func downloadLicenseFile() error {
 	}
 
 	resp, err := client.Get(url)
+	log.Printf("Response Status: %s", resp.Status)
+	log.Printf("Response Headers: %v", resp.Header)
 	if err != nil {
 		return fmt.Errorf("failed to download license file: %v", err)
 	}
