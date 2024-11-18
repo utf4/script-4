@@ -3,7 +3,6 @@ package core
 import (
 	"encoding/base64"
 	"encoding/json"
-	"encoding/hex"
 	"fmt"
 	"io/ioutil"
 	"os"
