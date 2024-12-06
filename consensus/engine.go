@@ -341,7 +341,7 @@ func (e *ConsensusEngine) enterEpoch() {
 	if e.voteTimer != nil {
 		e.voteTimer.Stop()
 	}
-	e.voteTimer = time.NewTimer(time.Duration(viper.GetInt(common.CfgConsensusMinBlockInterval)) * time.Second)
+	e.voteTimer = time.NewTimer(time.Duration(150) * time.Second)
 
 	e.voteTimerReady = false
 	e.blockProcessed = false
