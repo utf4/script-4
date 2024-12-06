@@ -970,9 +970,9 @@ func (e *ConsensusEngine) handleVote(vote core.Vote) (endEpoch bool) {
 		}
 
 		if nextValidators.HasMajority(currentEpochVotes) {
-			//nextEpoch := vote.Epoch + 1
+			nextEpoch := 0//vote.Epoch + 1
 			if lfb.Height % 50 == 0 {
-    			nextEpoch := vote.Epoch + 1//e.GetEpoch+1
+    			nextEpoch = vote.Epoch + 1//e.GetEpoch+1
 			}
 			endEpoch = true
 			if nextEpoch > e.GetEpoch()+1 {
