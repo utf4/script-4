@@ -336,12 +336,12 @@ func (e *ConsensusEngine) enterEpoch() {
 	if e.epochTimer != nil {
 		e.epochTimer.Stop()
 	}
-	e.epochTimer = time.NewTimer(time.Duration(300) * time.Second)
+	e.epochTimer = time.NewTimer(time.Duration(1000) * time.Second)
 
 	if e.voteTimer != nil {
 		e.voteTimer.Stop()
 	}
-	e.voteTimer = time.NewTimer(time.Duration(150) * time.Second)
+	e.voteTimer = time.NewTimer(time.Duration(6) * time.Second)
 
 	e.voteTimerReady = false
 	e.blockProcessed = false
@@ -970,7 +970,10 @@ func (e *ConsensusEngine) handleVote(vote core.Vote) (endEpoch bool) {
 		}
 
 		if nextValidators.HasMajority(currentEpochVotes) {
-			nextEpoch := vote.Epoch + 1
+			//nextEpoch := vote.Epoch + 1
+			if lfb.Height % 50 == 0 {
+    			nextEpoch := vote.Epoch + 1//e.GetEpoch+1
+			}
 			endEpoch = true
 			if nextEpoch > e.GetEpoch()+1 {
 				// Broadcast epoch votes when jumping epoch.
