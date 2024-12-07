@@ -971,6 +971,7 @@ func (e *ConsensusEngine) handleVote(vote core.Vote) (endEpoch bool) {
 
 		if nextValidators.HasMajority(currentEpochVotes) {
 			var nextEpoch uint64 = 0 //nextEpoch := 0//vote.Epoch + 1
+			e.logger.WithFields(log.Fields{"e.lfb" : lfb.Height}).Debug("LFB height beofre epoch calc")
 			if lfb.Height % 50 == 0 {
     			nextEpoch = vote.Epoch + 1//e.GetEpoch+1
 			}
