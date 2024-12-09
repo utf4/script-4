@@ -824,7 +824,7 @@ func (e *ConsensusEngine) handleNormalBlock(eb *core.ExtendedBlock) {
 	if (block.Height - lfb.Height) >= 100 {
 		e.logger.WithFields(log.Fields{
 			"block.Height": block.Height,
-			"lfb.Height": lfb.Height
+			"lfb.Height": lfb.Height,
 		}).Debug("Blocks in epoch condition met.")
 		if localEpoch := e.GetEpoch(); block.Epoch == localEpoch-1 || block.Epoch == localEpoch {
 			e.blockProcessed = true
@@ -841,7 +841,7 @@ func (e *ConsensusEngine) handleNormalBlock(eb *core.ExtendedBlock) {
 	} else {
 		e.logger.WithFields(log.Fields{
 			"block.Height": block.Height,
-			"lfb.Height": lfb.Height
+			"lfb.Height": lfb.Height,
 		}).Debug("Blocks in epoch condition not met.")
 	}
 
