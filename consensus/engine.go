@@ -305,8 +305,8 @@ func (e *ConsensusEngine) mainLoop() {
 				}
 			case <-e.epochTimer.C:
 				e.logger.WithFields(log.Fields{"e.epoch": e.GetEpoch()}).Debug("Epoch timeout. Repeating epoch")
-				e.vote()
-				break Epoch
+				//e.vote()
+				//break Epoch
 			case <-e.lightningTimer.C:
 				v := e.lightning.GetVoteToBroadcast()
 
