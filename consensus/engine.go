@@ -818,20 +818,34 @@ func (e *ConsensusEngine) handleNormalBlock(eb *core.ExtendedBlock) {
 	// Skip voting for block older than current best known epoch.
 	// Allow block with one epoch behind since votes are processed first and might advance epoch
 	// before block is processed.
-	if localEpoch := e.GetEpoch(); block.Epoch == localEpoch-1 || block.Epoch == localEpoch {
-		e.blockProcessed = true
-		if e.voteTimerReady {
-			e.vote()
+	lfb := e.state.GetLastFinalizedBlock()
+
+
+	if (block.Height - lfb.Height) >= 100 {
+		e.logger.WithFields(log.Fields{
+			"block.Height": block.Height,
+			"lfb.Height": lfb.Height
+		}).Debug("Blocks in epoch condition met.")
+		if localEpoch := e.GetEpoch(); block.Epoch == localEpoch-1 || block.Epoch == localEpoch {
+			e.blockProcessed = true
+			if e.voteTimerReady {
+				e.vote()
+			}
+		} else {
+			e.logger.WithFields(log.Fields{
+				"block.Epoch": block.Epoch,
+				"block.Hash":  block.Hash().Hex(),
+				"e.epoch":     localEpoch,
+			}).Debug("Skipping voting for block from previous epoch")
 		}
 	} else {
 		e.logger.WithFields(log.Fields{
-			"block.Epoch": block.Epoch,
-			"block.Hash":  block.Hash().Hex(),
-			"e.epoch":     localEpoch,
-		}).Debug("Skipping voting for block from previous epoch")
+			"block.Height": block.Height,
+			"lfb.Height": lfb.Height
+		}).Debug("Blocks in epoch condition not met.")
 	}
 
-	// Check and process CC.
+	// Check and process CC.+0
 	e.checkCC(block.Hash())
 
 	e.logger.WithFields(log.Fields{
@@ -970,11 +984,12 @@ func (e *ConsensusEngine) handleVote(vote core.Vote) (endEpoch bool) {
 		}
 
 		if nextValidators.HasMajority(currentEpochVotes) {
-			var nextEpoch uint64 = 0 //nextEpoch := 0//vote.Epoch + 1
-			e.logger.WithFields(log.Fields{"e.lfb" : lfb.Height}).Debug("LFB height beofre epoch calc")
-			if lfb.Height % 50 == 0 {
-    			nextEpoch = vote.Epoch + 1//e.GetEpoch+1
-			}
+			//var nextEpoch uint64 = 0 //nextEpoch := 0//vote.Epoch + 1
+			//e.logger.WithFields(log.Fields{"e.lfb" : lfb.Height}).Debug("LFB height beofre epoch calc")
+			/*if lfb.Height % 50 == 0 {
+    			nextEpoch = e.GetEpoch()+1
+			}*/
+			nextEpoch := vote.Epoch + 1
 			endEpoch = true
 			if nextEpoch > e.GetEpoch()+1 {
 				// Broadcast epoch votes when jumping epoch.
