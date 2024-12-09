@@ -1364,6 +1364,7 @@ func (e *ConsensusEngine) createProposal(shouldIncludeValidatorUpdateTxs bool) (
 
 func (e *ConsensusEngine) propose() {
 	tip := e.GetTipToExtend()
+	e.logger.WithFields(log.Fields{"tip" : tip}).Debug("should propose check")
 	if !e.shouldPropose(tip, e.GetEpoch()) {
 		return
 	}
