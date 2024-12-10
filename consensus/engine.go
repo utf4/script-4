@@ -1033,7 +1033,7 @@ func (e *ConsensusEngine) handleVote(vote core.Vote) (endEpoch bool) {
 			//nextEpoch := vote.Epoch + 1
 			var nextEpoch uint64 = e.GetEpoch()
 			e.logger.WithFields(log.Fields{"e.lfb" : lfb.Height}).Debug("LFB height beofre epoch calc")
-			if e.lastProcessedBlockHeight % 50 == 0 {
+			if e.lastProcessedBlockHeight % 5 == 0 {
 				nextEpoch = e.GetEpoch()+1
 				for _, v := range currentEpochVotes.Votes() {
 					e.broadcastVote(v)
