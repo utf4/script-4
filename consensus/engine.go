@@ -337,7 +337,7 @@ func (e *ConsensusEngine) enterEpoch() {
 	if e.epochTimer != nil {
 		e.epochTimer.Stop()
 	}
-	e.epochTimer = time.NewTimer(time.Duration(3000) * time.Second)
+	e.epochTimer = time.NewTimer(time.Duration(12) * time.Second)
 
 	if e.voteTimer != nil {
 		e.voteTimer.Stop()
