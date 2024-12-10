@@ -44,6 +44,7 @@ type ConsensusEngine struct {
 	incoming        chan interface{}
 	finalizedBlocks chan *core.Block
 	hasSynced       bool
+	lastProcessedBlockHeight   uint64
 
 	// Life cycle
 	wg      *sync.WaitGroup
@@ -858,6 +859,12 @@ func (e *ConsensusEngine) handleNormalBlock(eb *core.ExtendedBlock) {
 	}*/
 	if localEpoch := e.GetEpoch(); block.Epoch == localEpoch-1 || block.Epoch == localEpoch {
 			e.blockProcessed = true
+			e.lastProcessedBlockHeight = block.Height
+			e.logger.WithFields(log.Fields{
+				"block.Epoch": block.Epoch,
+				"block.Hash":  block.Hash().Hex(),
+				"e.epoch":     localEpoch,
+			}).Debug("Last processed block")
 	}
 
 
