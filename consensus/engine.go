@@ -295,13 +295,16 @@ func (e *ConsensusEngine) mainLoop() {
 				e.stopped = true
 				return
 			case msg := <-e.incoming:
+				e.logger.Debugf("DEBUG309:    processing message")
 				endEpoch := e.processMessage(msg)
 				if endEpoch {
+					e.logger.Debugf("DEBUG309:    ending epoch")
 					break Epoch
 				}
 			case <-e.voteTimer.C:
 				e.voteTimerReady = true
 				if e.blockProcessed {
+					e.logger.Debugf("DEBUG309:    voting with voter timer ready")
 					e.vote()
 				}
 
@@ -746,7 +749,9 @@ func (e *ConsensusEngine) handleHardcodeBlock(hash common.Hash) {
 	e.state.SetHighestCCBlock(eb)
 }
 
+
 func (e *ConsensusEngine) handleNormalBlock(eb *core.ExtendedBlock) {
+	e.logger.Debugf("DEBUG309:    handling normal block")
 	start := time.Now()
 
 	block := eb.Block
@@ -857,6 +862,7 @@ func (e *ConsensusEngine) handleNormalBlock(eb *core.ExtendedBlock) {
 			"lfb.Height": lfb.Height,
 		}).Debug("Blocks in epoch condition not met.")
 	}*/
+	e.logger.Debugf("DEBUG309:    checking epoch and block epoch")
 	if localEpoch := e.GetEpoch(); block.Epoch == localEpoch-1 || block.Epoch == localEpoch {
 			e.blockProcessed = true
 			e.lastProcessedBlockHeight = block.Height
@@ -893,6 +899,7 @@ func (e *ConsensusEngine) shouldVoteByID(id common.Address, block common.Hash) b
 }
 
 func (e *ConsensusEngine) vote() {
+	e.logger.Debugf("DEBUG309:    voting")
 	tip := e.GetTipToVote()
 
 	if !e.shouldVote(tip.Hash()) {
@@ -937,6 +944,7 @@ func (e *ConsensusEngine) vote() {
 		"vote": vote,
 	}).Debug("Sending vote")
 	e.broadcastVote(vote)
+	e.logger.Debugf("DEBUG309:    Calling resetVoterTimer")
 	e.resetVoterTimer()
 
 	go func() {
@@ -945,6 +953,7 @@ func (e *ConsensusEngine) vote() {
 }
 
 func (e *ConsensusEngine) broadcastVote(vote core.Vote) {
+	e.logger.Debugf("DEBUG309:    broadcasting vote")
 	payload, err := rlp.EncodeToBytes(vote)
 	if err != nil {
 		e.logger.WithFields(log.Fields{"vote": vote}).Error("Failed to encode vote")
@@ -983,6 +992,7 @@ func (e *ConsensusEngine) validateVote(vote core.Vote) bool {
 
 func (e *ConsensusEngine) handleVote(vote core.Vote) (endEpoch bool) {
 	// Validate vote.
+	e.logger.Debugf("DEBUG309:    handleVote called")
 	if !e.validateVote(vote) {
 		return
 	}
@@ -1049,6 +1059,7 @@ func (e *ConsensusEngine) handleVote(vote core.Vote) (endEpoch bool) {
 }
 
 func (e *ConsensusEngine) checkCC(hash common.Hash) {
+	e.logger.Debugf("DEBUG309:    checkingCC")
 	if hash.IsEmpty() {
 		return
 	}
@@ -1220,6 +1231,7 @@ func (e *ConsensusEngine) processCCBlock(ccBlock *core.ExtendedBlock) {
 }
 
 func (e *ConsensusEngine) finalizeBlock(block *core.ExtendedBlock) error {
+	e.logger.Debugf("DEBUG309:    finalizeBlock")
 	if e.stopped {
 		return nil
 	}
@@ -1234,6 +1246,7 @@ func (e *ConsensusEngine) finalizeBlock(block *core.ExtendedBlock) error {
 	e.state.SetLastFinalizedBlock(block)
 	e.ledger.FinalizeState(block.Height, block.StateHash)
 
+	e.logger.Debugf("DEBUG309:    checkSyncStatus")
 	e.checkSyncStatus()
 
 	// Mark block and its ancestors as finalized.
@@ -1325,6 +1338,7 @@ func (e *ConsensusEngine) shouldProposeByID(previousBlock common.Hash, epoch uin
 }
 
 func (e *ConsensusEngine) createProposal(shouldIncludeValidatorUpdateTxs bool) (core.Proposal, error) {
+	e.logger.Debugf("DEBUG309:    createProposal")
 	tip := e.GetTipToExtend()
 	//result := e.ledger.ResetState(tip.Height, tip.StateHash)
 	result := e.ledger.ResetState(tip.Block)
