@@ -303,6 +303,7 @@ func (e *ConsensusEngine) mainLoop() {
 				if e.blockProcessed {
 					e.vote()
 				}
+
 			case <-e.epochTimer.C:
 				e.logger.WithFields(log.Fields{"e.epoch": e.GetEpoch()}).Debug("Epoch timeout. Repeating epoch")
 				e.vote()
@@ -345,6 +346,17 @@ func (e *ConsensusEngine) enterEpoch() {
 
 	e.voteTimerReady = false
 	e.blockProcessed = false
+}
+
+func (e *ConsensusEngine) resetVoterTimer() {
+	logger.Debugf("Resetting voter timer")
+
+	if e.voteTimer != nil {
+		e.voteTimer.Stop()
+	}
+	e.voteTimer = time.NewTimer(time.Duration(6) * time.Second)
+
+	e.voteTimerReady = false
 }
 
 // GetChannelIDs implements the p2p.MessageHandler interface.
@@ -821,7 +833,7 @@ func (e *ConsensusEngine) handleNormalBlock(eb *core.ExtendedBlock) {
 	lfb := e.state.GetLastFinalizedBlock()
 
 
-	if (block.Height - lfb.Height) >= 100 {
+	/*if (block.Height - lfb.Height) >= 100 {
 		e.logger.WithFields(log.Fields{
 			"block.Height": block.Height,
 			"lfb.Height": lfb.Height,
@@ -843,7 +855,12 @@ func (e *ConsensusEngine) handleNormalBlock(eb *core.ExtendedBlock) {
 			"block.Height": block.Height,
 			"lfb.Height": lfb.Height,
 		}).Debug("Blocks in epoch condition not met.")
+	}*/
+	if localEpoch := e.GetEpoch(); block.Epoch == localEpoch-1 || block.Epoch == localEpoch {
+			e.blockProcessed = true
 	}
+
+
 
 	// Check and process CC.+0
 	e.checkCC(block.Hash())
@@ -913,6 +930,7 @@ func (e *ConsensusEngine) vote() {
 		"vote": vote,
 	}).Debug("Sending vote")
 	e.broadcastVote(vote)
+	e.resetVoterTimer()
 
 	go func() {
 		e.AddMessage(vote)
@@ -989,7 +1007,11 @@ func (e *ConsensusEngine) handleVote(vote core.Vote) (endEpoch bool) {
 			/*if lfb.Height % 50 == 0 {
     			nextEpoch = e.GetEpoch()+1
 			}*/
-			nextEpoch := vote.Epoch + 1
+			//nextEpoch := vote.Epoch + 1
+			e.logger.WithFields(log.Fields{"e.lfb" : lfb.Height}).Debug("LFB height beofre epoch calc")
+			if lfb.Height % 50 == 0 {
+				nextEpoch := vote.Epoch + 1
+			}
 			endEpoch = true
 			if nextEpoch > e.GetEpoch()+1 {
 				// Broadcast epoch votes when jumping epoch.
