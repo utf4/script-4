@@ -1012,14 +1012,17 @@ func (e *ConsensusEngine) handleVote(vote core.Vote) (endEpoch bool) {
 			e.logger.WithFields(log.Fields{"e.lfb" : lfb.Height}).Debug("LFB height beofre epoch calc")
 			if lfb.Height % 50 == 0 {
 				nextEpoch = e.GetEpoch()+1
-			}
-			endEpoch = true
-			if nextEpoch > e.GetEpoch()+1 {
-				// Broadcast epoch votes when jumping epoch.
 				for _, v := range currentEpochVotes.Votes() {
 					e.broadcastVote(v)
 				}
 			}
+			endEpoch = true
+			/*if nextEpoch > e.GetEpoch()+1 {
+				// Broadcast epoch votes when jumping epoch.
+				for _, v := range currentEpochVotes.Votes() {
+					e.broadcastVote(v)
+				}
+			}*/
 
 			tip := e.GetTipToExtend()
 			expectedProposer := e.validatorManager.GetNextProposer(tip.Hash(), nextEpoch)
