@@ -1024,7 +1024,8 @@ func (e *ConsensusEngine) handleVote(vote core.Vote) (endEpoch bool) {
 			}
 		}
 
-		if nextValidators.HasMajority(currentEpochVotes) {
+		if e.lastProcessedBlockHeight % 5 == 0 {
+			if nextValidators.HasMajority(currentEpochVotes) {
 			//var nextEpoch uint64 = 0 //nextEpoch := 0//vote.Epoch + 1
 			//e.logger.WithFields(log.Fields{"e.lfb" : lfb.Height}).Debug("LFB height beofre epoch calc")
 			/*if lfb.Height % 50 == 0 {
@@ -1033,13 +1034,13 @@ func (e *ConsensusEngine) handleVote(vote core.Vote) (endEpoch bool) {
 			//nextEpoch := vote.Epoch + 1
 			var nextEpoch uint64 = e.GetEpoch()
 			e.logger.WithFields(log.Fields{"e.lfb" : lfb.Height}).Debug("LFB height beofre epoch calc")
-			if e.lastProcessedBlockHeight % 5 == 0 {
-				nextEpoch = e.GetEpoch()+1
+			//if e.lastProcessedBlockHeight % 5 == 0 {
+				nextEpoch = vote.Epoch + 1 //e.GetEpoch()+1
 				for _, v := range currentEpochVotes.Votes() {
 					e.broadcastVote(v)
 				}
 				endEpoch = true
-			}
+			//}
 			
 			/*if nextEpoch > e.GetEpoch()+1 {
 				// Broadcast epoch votes when jumping epoch.
@@ -1061,7 +1062,7 @@ func (e *ConsensusEngine) handleVote(vote core.Vote) (endEpoch bool) {
 
 			e.checkSyncStatus()
 		}
-	}
+	}}
 	return
 }
 
