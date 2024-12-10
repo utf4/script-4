@@ -1032,8 +1032,9 @@ func (e *ConsensusEngine) handleVote(vote core.Vote) (endEpoch bool) {
 				for _, v := range currentEpochVotes.Votes() {
 					e.broadcastVote(v)
 				}
+				endEpoch = true
 			}
-			endEpoch = true
+			
 			/*if nextEpoch > e.GetEpoch()+1 {
 				// Broadcast epoch votes when jumping epoch.
 				for _, v := range currentEpochVotes.Votes() {
