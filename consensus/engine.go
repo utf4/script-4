@@ -830,7 +830,7 @@ func (e *ConsensusEngine) handleNormalBlock(eb *core.ExtendedBlock) {
 	// Skip voting for block older than current best known epoch.
 	// Allow block with one epoch behind since votes are processed first and might advance epoch
 	// before block is processed.
-	lfb := e.state.GetLastFinalizedBlock()
+	//lfb := e.state.GetLastFinalizedBlock()
 
 
 	/*if (block.Height - lfb.Height) >= 100 {
@@ -1008,9 +1008,10 @@ func (e *ConsensusEngine) handleVote(vote core.Vote) (endEpoch bool) {
     			nextEpoch = e.GetEpoch()+1
 			}*/
 			//nextEpoch := vote.Epoch + 1
+			var nextEpoch uint64 = 0
 			e.logger.WithFields(log.Fields{"e.lfb" : lfb.Height}).Debug("LFB height beofre epoch calc")
 			if lfb.Height % 50 == 0 {
-				nextEpoch := vote.Epoch + 1
+				nextEpoch = vote.Epoch + 1
 			}
 			endEpoch = true
 			if nextEpoch > e.GetEpoch()+1 {
