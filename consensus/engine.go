@@ -1024,7 +1024,9 @@ func (e *ConsensusEngine) handleVote(vote core.Vote) (endEpoch bool) {
 			}
 		}
 
+		e.logger.WithFields(log.Fields{"e.lastProcessedBlockHeight" : e.lastProcessedBlockHeight}).Debug("DEBUG309:   LFB height before epoch calc")
 		if e.lastProcessedBlockHeight % 5 == 0 {
+
 			if nextValidators.HasMajority(currentEpochVotes) {
 			//var nextEpoch uint64 = 0 //nextEpoch := 0//vote.Epoch + 1
 			//e.logger.WithFields(log.Fields{"e.lfb" : lfb.Height}).Debug("LFB height beofre epoch calc")
@@ -1033,7 +1035,6 @@ func (e *ConsensusEngine) handleVote(vote core.Vote) (endEpoch bool) {
 			}*/
 			//nextEpoch := vote.Epoch + 1
 			var nextEpoch uint64 = e.GetEpoch()
-			e.logger.WithFields(log.Fields{"e.lfb" : lfb.Height}).Debug("LFB height beofre epoch calc")
 			//if e.lastProcessedBlockHeight % 5 == 0 {
 				nextEpoch = vote.Epoch + 1 //e.GetEpoch()+1
 				for _, v := range currentEpochVotes.Votes() {
