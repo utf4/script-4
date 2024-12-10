@@ -753,6 +753,12 @@ func (e *ConsensusEngine) handleHardcodeBlock(hash common.Hash) {
 func (e *ConsensusEngine) handleNormalBlock(eb *core.ExtendedBlock) {
 	e.logger.Debugf("DEBUG309:    handling normal block")
 	start := time.Now()
+	e.logger.WithFields(log.Fields{
+		"block": eb.Hash().Hex(),
+		"status": eb.Status,
+		"height": eb.Height,
+		"epoch":  eb.Epoch,
+	}).Debug("Processing block")
 
 	block := eb.Block
 	if !eb.Status.IsPending() {
