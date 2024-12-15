@@ -81,6 +81,14 @@ func (s *State) getSummary() *StateStub {
 		Epoch:        s.epoch,
 		Root:         s.chain.Root().Hash(),
 	}
+	logger.WithFields(log.Fields{
+		"stub.Root": stub.Root.Hex(),
+		"chain.Root": s.chain.Root().Hash().Hex(),
+		"stub.Epoch": stub.Epoch,
+		"stub.LastProposal": stub.LastProposal,
+		"stub.LastVote": stub.LastVote,
+	}).Debug("DEBUG309   State getSummary")
+
 	stub.HighestCCBlock = s.highestCCBlock
 	stub.LastFinalizedBlock = s.lastFinalizedBlock
 	return stub
@@ -113,9 +121,9 @@ func (s *State) load(forcedLastVote *core.Vote) (err error) {
 		s.LastVote = *forcedLastVote
 	}
 	s.epoch = stub.Epoch
-	logger.WithFields(log.Field{
+	logger.WithFields(log.Fields{
 		"stub.Epoch": stub.Epoch,
-	}).Debug("State stub load epoch")
+	}).Debug("DEBUG309   State stub load epoch")
 	s.lastFinalizedBlock = stub.LastFinalizedBlock
 	s.highestCCBlock = stub.HighestCCBlock
 	return
