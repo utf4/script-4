@@ -183,7 +183,7 @@ func init() {
 	viper.SetDefault(CfgGenesisEthChainID, 0);
 	viper.SetDefault(CfgGenesisChainID, "");
 
-	viper.SetDefault(CfgConsensusMaxEpochLength, 300)
+	viper.SetDefault(CfgConsensusMaxEpochLength, 12)
 	viper.SetDefault(CfgConsensusMinBlockInterval, 6)
 	viper.SetDefault(CfgConsensusMessageQueueSize, 512)
 	viper.SetDefault(CfgConsensusEdgeNodeVoteQueueSize, 100000)
