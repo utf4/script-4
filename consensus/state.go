@@ -114,7 +114,7 @@ func (s *State) load(forcedLastVote *core.Vote) (err error) {
 	}
 	s.epoch = stub.Epoch
 	logger.WithFields(log.Field{
-		"stub.Epoch": stub.Epoch
+		"stub.Epoch": stub.Epoch,
 	}).Debug("State stub load epoch")
 	s.lastFinalizedBlock = stub.LastFinalizedBlock
 	s.highestCCBlock = stub.HighestCCBlock
