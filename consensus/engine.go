@@ -685,6 +685,7 @@ func (e *ConsensusEngine) validateBlock(block *core.Block, parent *core.Extended
 }
 
 func (e *ConsensusEngine) handleBlock(block *core.Block) {
+	e.logger.Debugf("DEBUG309  handleBlock called")
 	eb, err := e.chain.FindBlock(block.Hash())
 	if err != nil {
 		// Should not happen.
