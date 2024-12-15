@@ -702,6 +702,7 @@ func (e *ConsensusEngine) handleBlock(block *core.Block) {
 }
 
 func (e *ConsensusEngine) handleHardcodeBlock(hash common.Hash) {
+	e.logger.Debugf("DEBUG306 handle hard coded block")
 	eb, err := e.chain.FindBlock(hash)
 	if err != nil {
 		// block still not synced to DB, wait and retry
