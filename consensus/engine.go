@@ -184,6 +184,7 @@ func (e *ConsensusEngine) Start(ctx context.Context) {
 
 	e.checkSyncStatus()
 
+	lastProcessedBlockHeight = e.state.GetLastFinalizedBlock()
 	e.wg.Add(1)
 	go e.mainLoop()
 }
