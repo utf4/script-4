@@ -875,9 +875,9 @@ func (e *ConsensusEngine) handleNormalBlock(eb *core.ExtendedBlock) {
 	if localEpoch := e.GetEpoch(); block.Epoch == localEpoch-1 || block.Epoch == localEpoch {
 			e.blockProcessed = true
 			e.lastProcessedBlockHeight = block.Height
-			if e.voteTimerReady {
+			/*if e.voteTimerReady {
 				e.vote()
-			}
+			}*/
 			e.logger.WithFields(log.Fields{
 				"block.Epoch": block.Epoch,
 				"block.Hash":  block.Hash().Hex(),
