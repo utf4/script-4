@@ -71,6 +71,10 @@ func (g *LightningEngine) StartNewBlock(block common.Hash) {
 	}
 	g.gcp = gcp
 	g.gcpHash = gcp.Hash()
+	logger.WithFields(log.Fields{
+		"withstakes": gcp.WithStake(),
+		"pubkey":     g.privKey.PublicKey(),
+	}).Debug("DEBUG309REWARDS 		LightningEngine StartNewBlock WithStake")
 	g.signerIndex = gcp.WithStake().Index(g.privKey.PublicKey())
 
 	g.logger.WithFields(log.Fields{

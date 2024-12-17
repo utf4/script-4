@@ -241,13 +241,13 @@ func (gcp *LightningCandidatePool) WithStake() *LightningCandidatePool {
 			logger.Debugf("DEBUG309REWARD 00003a Stake Details: Withdrawn=%v, Source=%v", stake.Withdrawn, stake.Source)
 
 			if !stake.Withdrawn {
-				logger.Debugf("DEBUG309REWARD 00004a Skipping candidate with stakes: %+v", g.Stakes)
+				logger.Debugf("DEBUG309REWARD 00004a True candidate with stakes: %+v", g.Stakes)
 				hasStake = true
 				break
 			}
 		}
 		if !hasStake {
-			logger.Debugf("DEBUG309REWARD 00004 LightningCandidatePool::WithStake engine::vote. holder=%v", g.Holder)
+			logger.Debugf("DEBUG309REWARD 00004 Skipping LightningCandidatePool::WithStake engine::vote. holder=%v", g.Holder)
 			continue
 		}
 
