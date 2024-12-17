@@ -314,7 +314,9 @@ func (e *ConsensusEngine) mainLoop() {
 				break Epoch
 			case <-e.lightningTimer.C:
                 e.logger.Debug("TR-02020 TIMER Lightning.")
+				e.logger.Debugf("DEBUG309REWARDS:    lightning timer")
 				v := e.lightning.GetVoteToBroadcast()
+				e.logger.WithFields(log.Fields{"vote": v}).Debug("DEBUG309REWARDS:    Broadcasting lightning vote")
 
 				if v != nil {
 					e.lightning.logger.WithFields(log.Fields{"vote": v}).Debug("Broadcasting lightning vote")
@@ -387,7 +389,9 @@ func (e *ConsensusEngine) processMessage(msg interface{}) (endEpoch bool) {
 	case *core.AggregatedVotes:
         e.logger.Debug("TR-01030 processMessage AggregatedVotes (lightning vote)")
 		// e.logger.WithFields(log.Fields{"lightning vote": m}).Debug("Received lightning vote")
+		e.logger.WithFields(log.Fields{"lightning vote": m}).Debug("DEBUG309REWARDS		Received lightning vote")
 		e.handleLightningVote(m)
+		
 	case *core.EENVote:
 		// e.logger.WithFields(log.Fields{"elite edge node vote": m}).Debug("Received elite edge node vote")
 		e.handleEliteEdgeNodeVote(m)
@@ -1119,6 +1123,7 @@ func (e *ConsensusEngine) GetTip(includePendingBlockingLeaf bool) *core.Extended
 }
 
 func (e *ConsensusEngine) handleLightningVote(v *core.AggregatedVotes) {
+	e.logger.Debugf("DEBUG309REWARD:    handleLightningVote")
 	e.lightning.HandleVote(v)
 }
 
