@@ -238,7 +238,10 @@ func (gcp *LightningCandidatePool) WithStake() *LightningCandidatePool {
 		// Skip if lightning dons't have non-withdrawn stake
 		hasStake := false
 		for _, stake := range g.Stakes {
+			logger.Debugf("DEBUG309REWARD 00003a Stake Details: Withdrawn=%v, Source=%v", stake.Withdrawn, stake.Source)
+
 			if !stake.Withdrawn {
+				logger.Debugf("DEBUG309REWARD 00004a Skipping candidate with stakes: %+v", g.Stakes)
 				hasStake = true
 				break
 			}
