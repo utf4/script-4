@@ -323,6 +323,7 @@ func (sv *StoreView) UpdateValidatorCandidatePool(vcp *core.ValidatorCandidatePo
 // GetLightningCandidatePool gets the lightning candidate pool.
 func (sv *StoreView) GetLightningCandidatePool() *core.LightningCandidatePool {
 	data := sv.Get(LightningCandidatePoolKey())
+	log.Debugf("GetLightningCandidatePool: %v", data)
 	if data == nil || len(data) == 0 {
 		return core.NewLightningCandidatePool()
 	}
@@ -338,6 +339,7 @@ func (sv *StoreView) GetLightningCandidatePool() *core.LightningCandidatePool {
 // UpdateLightningCandidatePool updates the lightning candidate pool.
 func (sv *StoreView) UpdateLightningCandidatePool(gcp *core.LightningCandidatePool) {
 	gcpBytes, err := types.ToBytes(gcp)
+	log.Debugf("UpdateLightningCandidatePool: %v", gcpBytes)
 	if err != nil {
 		log.Panicf("Error writing lightning candidate pool %v, error: %v",
 			gcp, err.Error())
