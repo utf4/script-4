@@ -233,7 +233,7 @@ func (gcp *LightningCandidatePool) Contains(g common.Address) bool {
 // WithStake returns a new pool with withdrawn lightnings filtered out.
 func (gcp *LightningCandidatePool) WithStake() *LightningCandidatePool {
 	ret := NewLightningCandidatePool()
-	logger.WithFields(logger.Fields{
+	logger.WithFields(log.Fields{
 		"len": gcp.Len(),
 		"gcp lightning bool": gcp.SortedLightnings,
 	}).Debug("DEBUG309REWARD 00003 LightningCandidatePool::WithStake engine::vote.")
@@ -247,7 +247,7 @@ func (gcp *LightningCandidatePool) WithStake() *LightningCandidatePool {
 			}
 		}
 		if !hasStake {
-			logger.WithFields(logger.Fields{
+			logger.WithFields(log.Fields{
 				"holder": g.Holder,
 			}).Debug("DEBUG309REWARD 00004 LightningCandidatePool::WithStake engine::vote.")
 			continue
