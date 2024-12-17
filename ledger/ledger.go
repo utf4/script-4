@@ -169,10 +169,16 @@ func (ledger *Ledger) GetLightningCandidatePool(blockHash common.Hash) (*core.Li
 			stateRoot := block.BlockHeader.StateHash
 			storeView := st.NewStoreView(block.Height, stateRoot, db)
 			gcp := storeView.GetLightningCandidatePool()
+			logger.WithFields(log.Fields{
+				"blockHash": blockHash.Hex(),
+				"lightningVotes": block.LightningVotes,
+				"candidatePool": gcp,
+			}).Debug("DEBUG309REWARDS GetLightningCandidatePool")
 			return gcp, nil
 		}
 		blockHash = block.Parent
 	}
+
 }
 
 // GetEliteEdgeNodePoolOfLastCheckpoint returns the elite edge node pool of the given block.

@@ -61,6 +61,9 @@ func (g *LightningEngine) StartNewBlock(block common.Hash) {
 	g.round = 1
 
 	gcp, err := g.engine.GetLedger().GetLightningCandidatePool(block)
+	logger.WithFields(log.Fields{
+		"gcp": gcp,
+	}).Debug("DEBUG309REWARDS 		LightningEngine StartNewBlock")
 	if err != nil {
 		// Should not happen
 		g.logger.Panic(err)
@@ -80,6 +83,7 @@ func (g *LightningEngine) StartNewBlock(block common.Hash) {
 		"gcp":         g.gcpHash.Hex(),
 		"isLightning": g.isLightning(),
 		"vote":		   g.nextVote,
+		"signerIndex": g.signerIndex,
 	}).Debug("DEBUG309REWARDS 		LightningEngine StartNewBlock")
 	if g.isLightning() {
 		g.nextVote = core.NewAggregateVotes(block, gcp)
