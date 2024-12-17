@@ -75,6 +75,12 @@ func (g *LightningEngine) StartNewBlock(block common.Hash) {
 		"signerIndex": g.signerIndex,
 	}).Debug("Starting new block")
 
+	logger.WithFields(log.Fields{
+		"block":       block.Hex(),
+		"gcp":         g.gcpHash.Hex(),
+		"isLightning": g.isLightning(),
+		"vote":		   g.nextVote,
+	}).Debug("DEBUG309REWARDS 		LightningEngine StartNewBlock")
 	if g.isLightning() {
 		g.nextVote = core.NewAggregateVotes(block, gcp)
 		g.nextVote.Sign(g.privKey, g.signerIndex)
@@ -123,6 +129,9 @@ func (g *LightningEngine) mainLoop(ctx context.Context) {
 			return
 		case vote, ok := <-g.incoming:
 			if ok {
+				logger.WithFields(log.Fields{
+					"vote": vote,
+				}).Debug("DEBUG309REWARDS 		LightningEngine mainLoop")
 				g.processVote(vote)
 			}
 		}
@@ -133,6 +142,7 @@ func (g *LightningEngine) processVote(vote *core.AggregatedVotes) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
 
+	logger.Debug("DEBUG309REWARDS 		LightningEngine processVote")
 	if !g.validateVote(vote) {
 		return
 	}
@@ -213,8 +223,10 @@ func (g *LightningEngine) processVote(vote *core.AggregatedVotes) {
 }
 
 func (g *LightningEngine) HandleVote(vote *core.AggregatedVotes) {
+	logger.Debugf("DEBUG309REWARDS 		LightningEngine HandleVote")
 	select {
 	case g.incoming <- vote:
+		logger.Debugf("DEBUG309REWARDS 		LightningEngine HandleVote 2")
 		return
 	default:
 		g.logger.Debug("LightningEngine queue is full, discarding vote: %v", vote)
@@ -222,6 +234,7 @@ func (g *LightningEngine) HandleVote(vote *core.AggregatedVotes) {
 }
 
 func (g *LightningEngine) validateVote(vote *core.AggregatedVotes) (res bool) {
+	logger.Debug("DEBUG309REWARDS 		LightningEngine validateVote")
 	if g.block.IsEmpty() {
 		g.logger.WithFields(log.Fields{
 			"local.block":    g.block.Hex(),
