@@ -48,7 +48,7 @@ func NewLightningEngine(c *ConsensusEngine, privateKey *bls.SecretKey) *Lightnin
 }
 
 func (g *LightningEngine) isLightning() bool {
-	logger.Debugf("signerIndex=%d", g.signerIndex)
+	logger.Debugf("DEBUG309REWARDS 		signerIndex=%d", g.signerIndex)
 	return g.signerIndex >= 0
 }
 
@@ -87,8 +87,8 @@ func (g *LightningEngine) StartNewBlock(block common.Hash) {
 		"signerIndex": g.signerIndex,
 	}).Debug("DEBUG309REWARDS 		LightningEngine StartNewBlock")
 
-	logger.Debugf("signerIndex=%d before isLightning check", g.signerIndex)
-	logger.Debugf("isLightning result=%v", g.isLightning())
+	logger.Debugf("DEBUG309REWARDS 		signerIndex=%d before isLightning check", g.signerIndex)
+	logger.Debugf("DEBUG309REWARDS 		isLightning result=%v", g.isLightning())
 
 	if g.isLightning() {
 		g.nextVote = core.NewAggregateVotes(block, gcp)
