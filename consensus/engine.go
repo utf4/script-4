@@ -1246,6 +1246,13 @@ func (e *ConsensusEngine) finalizeBlock(block *core.ExtendedBlock) error {
 	select {
 	case e.finalizedBlocks <- block.Block:
 		e.logger.Infof("Notified finalized block, height=%v", block.Height)
+		if common.IsCheckPointHeight(block.Height) {
+			e.logger.WithFields(log.Fields{"block": block.Hash().Hex()}).Info("DEBUG309REWARD   Finalized checkpoint block")
+			e.logger.WithFields(log.Fields{
+				"votes": e.lightning.GetBestVote().String(),
+				"lightningVotes": block.LightningVotes.String(),
+			}).Info("DEBUG309REWARD   Lightning votes")
+		}
 	default:
 		e.logger.Warnf("Failed to notify finalized block, height=%v", block.Height)
 	}
@@ -1341,6 +1348,10 @@ func (e *ConsensusEngine) createProposal(shouldIncludeValidatorUpdateTxs bool) (
 
 	// Add lightning votes.
 	if block.Height >= common.HeightEnableScript2 && common.IsCheckPointHeight(block.Height) {
+		e.logger.Debug("TR-00010 createProposal")
+		e.logger.WithFields(log.Fields{
+			vote: e.lightning.GetBestVote(),
+		}).Debug("DEBUG309REWARD TR-00011 createProposal Votes")
 		block.LightningVotes = e.lightning.GetBestVote()
 	}
 
@@ -1376,6 +1387,9 @@ func (e *ConsensusEngine) createProposal(shouldIncludeValidatorUpdateTxs bool) (
 	lastCCValidators := e.validatorManager.GetValidatorSet(lastCC.Hash())
 	lastCCVotes := e.chain.FindVotesByHash(lastCC.Hash())
 	epochVotes, err := e.state.GetEpochVotes()
+	e.logger.WithFields(log.Fields{
+		"epochVotes": epochVotes,
+	}).Debug("DEBUG309REWARD TR-00012 createProposal Votes")
 	if err != nil {
 		if lastCC.Height > core.GenesisBlockHeight { // OK for the genesis block not to have votes
 			e.logger.WithFields(log.Fields{"error": err}).Warn("Failed to load epoch votes")
