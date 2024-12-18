@@ -1250,7 +1250,14 @@ func (e *ConsensusEngine) finalizeBlock(block *core.ExtendedBlock) error {
 			e.logger.WithFields(log.Fields{"block": block.Hash().Hex()}).Info("DEBUG309REWARD   Finalized checkpoint block")
 			e.logger.WithFields(log.Fields{
 				"votes": e.lightning.GetBestVote().String(),
-				"lightningVotes": block.LightningVotes.String(),
+				"lightningVotes": func() string {
+					if block.LightningVotes != nil {
+						return block.LightningVotes.String()
+					}
+					return "nil"
+				}(),
+				"block" : block.Hash().Hex(),
+				"block" : block.String(),
 			}).Info("DEBUG309REWARD   Lightning votes")
 		}
 	default:
