@@ -317,6 +317,7 @@ func grantValidatorAndLightningReward(ledger core.Ledger, view *st.StoreView, va
 		panic("lightningPool == nil || lightningVotes == nil")
 	}
 	lightningPool = lightningPool.WithStake()
+	logger.Debugf("TR-job309_REWARDS 00120 grantValidatorAndLightningReward lightningPool=%v", lightningPool)
 
 	if totalStake.Cmp(big.NewInt(0)) == 0 {
 		// Should never happen
@@ -349,7 +350,6 @@ func grantValidatorAndLightningReward(ledger core.Ledger, view *st.StoreView, va
 			effectiveStakes[idx] = append(effectiveStakes[idx], stake)
 		}
 	}
-
 	for i, g := range lightningPool.SortedLightnings {
 		if lightningVotes.Multiplies[i] == 0 {
 			continue
@@ -369,8 +369,12 @@ func grantValidatorAndLightningReward(ledger core.Ledger, view *st.StoreView, va
 			stake.Holder = g.Holder
 			idx := stakeGroupMap[stake.Source]
 			effectiveStakes[idx] = append(effectiveStakes[idx], stake)
+
+			logger.Debugf("TR-job309_REWARDS 00130 Added stake: Holder=%v, Source=%v, Amount=%v", stake.Holder, stake.Source, stake.Amount)
 		}
+		logger.Debugf("TR-job309_REWARDS 00131 Processed lightning: Index=%v, Holder=%v, TotalStakes=%v", i, g.Holder, len(stakes))
 	}
+	logger.Debugf("TR-job309_REWARDS 00132 Total stake after processing lightnings: %v", totalStake)
 
 	totalReward := big.NewInt(1).Mul(spayRewardPerBlock, big.NewInt(common.CheckpointInterval))
 
@@ -380,10 +384,12 @@ func grantValidatorAndLightningReward(ledger core.Ledger, view *st.StoreView, va
 	}
 
 	if blockHeight < common.HeightSampleStakingReward {
+		logger.Debugf("TR-job309_REWARDS 00240 issueFixedReward. height %v. ", blockHeight)
 		// the source of the stake divides the block reward proportional to their stake
 		issueFixedReward(effectiveStakes, totalStake, accountReward, totalReward, srdsr, "Block")
 	} else {
-		// randomly select (proportional to the stake) a constant-sized set of stakers and grand the block reward
+		logger.Debugf("TR-job309_REWARDS 00250 issueRandomizedReward. height %v. ", blockHeight)
+		// randomly select (proportional to the stake) a constant-sized set of stakers and grant the block reward
 		issueRandomizedReward(ledger, lightningVotes, view, effectiveStakes,
 			totalStake, accountReward, totalReward, srdsr, "Block")
 	}
@@ -610,7 +616,7 @@ func issueRandomizedReward(ledger core.Ledger, lightningVotes *core.AggregatedVo
 				}
 				currSum = upper
 
-				//logger.Infof("RandomReward -- staker: %v, count: %v, height: %v, stake: %v, type: %v", stakeSourceAddr, count, view.Height()+1, stakeAmountSum, rewardType)
+				logger.Infof("RandomReward -- staker: %v, count: %v, height: %v, stake: %v, type: %v", stakeSourceAddr, count, view.Height()+1, stakeAmountSum, rewardType)
 
 				if count > 0 {
 					tmp := new(big.Int).Mul(totalReward, big.NewInt(int64(count)))
@@ -651,7 +657,7 @@ func issueRandomizedReward(ledger core.Ledger, lightningVotes *core.AggregatedVo
 			}
 			currSum = upper
 
-			// logger.Infof("RandomReward -- staker: %v, count: %v, height: %v, stake: %v, type: %v", stakeSourceAddr, count, view.Height()+1, stakeAmountSum, rewardType)
+			logger.Infof("RandomReward -- staker: %v, count: %v, height: %v, stake: %v, type: %v", stakeSourceAddr, count, view.Height()+1, stakeAmountSum, rewardType)
 
 			if count > 0 {
 				tmp := new(big.Int).Mul(totalReward, big.NewInt(int64(count)))
