@@ -1350,7 +1350,7 @@ func (e *ConsensusEngine) createProposal(shouldIncludeValidatorUpdateTxs bool) (
 	if block.Height >= common.HeightEnableScript2 && common.IsCheckPointHeight(block.Height) {
 		e.logger.Debug("TR-00010 createProposal")
 		e.logger.WithFields(log.Fields{
-			vote: e.lightning.GetBestVote(),
+			"vote": e.lightning.GetBestVote(),
 		}).Debug("DEBUG309REWARD TR-00011 createProposal Votes")
 		block.LightningVotes = e.lightning.GetBestVote()
 	}
