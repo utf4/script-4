@@ -813,6 +813,9 @@ func (e *ConsensusEngine) handleNormalBlock(eb *core.ExtendedBlock) {
 	}
 
 	start1 = time.Now()
+	e.logger.WithFields(log.Fields{
+		"block votes": block.LightningVotes,
+	}).Debug("TR-job309_REWARDS 00000 consensus::handleNormalBlock applying Block LightningVotes")
 	result = e.ledger.ApplyBlockTxs(block)
 	if result.IsError() {
 		e.logger.WithFields(log.Fields{

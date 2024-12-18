@@ -99,7 +99,7 @@ func (exec *CoinbaseTxExecutor) sanityCheck(chainID string, view *st.StoreView, 
 	currentBlock := exec.consensus.GetLedger().GetCurrentBlock()
 	lightningVotes := currentBlock.LightningVotes
 	eliteEdgeNodeVotes := currentBlock.EliteEdgeNodeVotes
-	logger.Debug("TR-job309_REWARDS 00000 lightningVotes ", lightningVotes)
+	logger.Debug("TR-job309_REWARDS 00000 lightningVotes %v", lightningVotes)
 	lightningPool, eliteEdgeNodePool := RetrievePools(exec.consensus.GetLedger(), exec.chain, exec.db, tx.BlockHeight, lightningVotes, eliteEdgeNodeVotes)
 	expectedRewards = CalculateReward(exec.consensus.GetLedger(), view, validatorSet, lightningVotes, lightningPool, eliteEdgeNodeVotes, eliteEdgeNodePool)
 
