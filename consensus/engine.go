@@ -1257,7 +1257,7 @@ func (e *ConsensusEngine) finalizeBlock(block *core.ExtendedBlock) error {
 					return "nil"
 				}(),
 				"block" : block.Hash().Hex(),
-				"block" : block.String(),
+				"block" : block.Block.String(),
 			}).Info("DEBUG309REWARD   Lightning votes")
 		}
 	default:
