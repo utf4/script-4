@@ -158,6 +158,7 @@ func (g *LightningEngine) processVote(vote *core.AggregatedVotes) {
 	defer g.mu.Unlock()
 
 	logger.Debug("DEBUG309REWARDS 		LightningEngine processVote")
+	logger.Debugf("DEBUG309REWARDS 		LightningEngine processVote: vote=%v", vote)
 	if !g.validateVote(vote) {
 		return
 	}
@@ -241,6 +242,7 @@ func (g *LightningEngine) processVote(vote *core.AggregatedVotes) {
 
 func (g *LightningEngine) HandleVote(vote *core.AggregatedVotes) {
 	logger.Debugf("DEBUG309REWARDS 		LightningEngine HandleVote")
+	logger.Debugf("DEBUG309REWARDS 		LightningEngine HandleVote 1 %v", vote)
 	select {
 	case g.incoming <- vote:
 		logger.Debugf("DEBUG309REWARDS 		LightningEngine HandleVote 2")
@@ -252,6 +254,7 @@ func (g *LightningEngine) HandleVote(vote *core.AggregatedVotes) {
 
 func (g *LightningEngine) validateVote(vote *core.AggregatedVotes) (res bool) {
 	logger.Debug("DEBUG309REWARDS 		LightningEngine validateVote")
+	logger.Debugf("DEBUG309REWARDS 		LightningEngine validateVote: vote=%v", vote)
 	if g.block.IsEmpty() {
 		g.logger.WithFields(log.Fields{
 			"local.block":    g.block.Hex(),
