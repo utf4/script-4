@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"time"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/scripttoken/script/common"
-	"github.com/spf13/viper"
 	"github.com/scripttoken/script/crypto"
 	"github.com/scripttoken/script/crypto/sha3"
+	"github.com/spf13/viper"
 )
 
 type LicenseReadFile struct {
@@ -65,7 +65,7 @@ func ReadFile(filename string) (map[common.Address]License, error) {
 		return nil, fmt.Errorf("Failed to unmarshal JSON: %v", err)
 	}
 
-	licenseMap = make(map[common.Address]License) // clear previous map
+	licenseMap = make(map[common.Address]License)        // clear previous map
 	verifiedLicenseCache = make(map[common.Address]bool) // clear previous cache
 
 	for _, licenseRF := range licenses {
@@ -97,7 +97,11 @@ func ReadFile(filename string) (map[common.Address]License, error) {
 			To:        uint64(to),
 			Items:     licenseRF.Items,
 			Signature: licenseRF.Signature,
-	  }
+		}
+
+		if err = ValidateIncomingLicense(license); err != nil {
+			return nil, fmt.Errorf("Failed to validate license for licensee %v: %v", license.Licensee.Hex(), err)
+		}
 
 		licenseMap[license.Licensee] = license
 	}
@@ -188,7 +192,7 @@ func ValidateLicense(licensee common.Address) error {
 	// Check cache first
 	if _, exists := verifiedLicenseCache[licensee]; exists {
 		return nil // License exists in the cache
-  }
+	}
 
 	license, exists := licenseMap[licensee]
 	if !exists {
@@ -210,7 +214,7 @@ func ValidateLicense(licensee common.Address) error {
 	}
 	if !signature.Verify(dataToValidate, license.Issuer) {
 		verifiedLicenseCache[licensee] = false
-		return fmt.Errorf("invalid license signature:%v, %v, %v, %x", license.Issuer.Hex(), base64.StdEncoding.EncodeToString(signature.ToBytes()), dataToValidate, keccak256(dataToValidate))	
+		return fmt.Errorf("invalid license signature:%v, %v, %v, %x", license.Issuer.Hex(), base64.StdEncoding.EncodeToString(signature.ToBytes()), dataToValidate, keccak256(dataToValidate))
 	}
 
 	// cache the verified status
