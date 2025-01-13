@@ -53,9 +53,8 @@ func doDepositStakeCmd(cmd *cobra.Command, args []string) {
 
 	var scriptStake *big.Int
 	var spayStake *big.Int
-
-	//Check License
-	if purposeFlag == core.StakeForValidator {
+	if purposeFlag == core.StakeForValidator || purposeFlag == core.StakeForLightning {
+		// Validate license for Validator & Lightning nodes.
 		var addr common.Address
 		if len(holderFlag) != 40 && len(holderFlag) != 42 {
 			utils.Error("holder must be a valid address")
@@ -73,9 +72,8 @@ func doDepositStakeCmd(cmd *cobra.Command, args []string) {
 		} else {
 			fmt.Println("License validation succeeded")
 		}
-	}
 
-	if purposeFlag == core.StakeForValidator || purposeFlag == core.StakeForLightning {
+		// Set stake amount.
 		scriptStake = stake
 		spayStake = new(big.Int).SetUint64(0)
 	} else { // purposeFlag == core.StakeForEliteEdgeNode
