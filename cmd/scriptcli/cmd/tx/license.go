@@ -2,17 +2,17 @@ package tx
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"math/big"
-	"encoding/json"
 
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"github.com/scripttoken/script/cmd/scriptcli/cmd/utils"
 	"github.com/scripttoken/script/core"
 	"github.com/scripttoken/script/ledger/types"
 	"github.com/scripttoken/script/rpc"
 	wtypes "github.com/scripttoken/script/wallet/types"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/ybbus/jsonrpc"
 	rpcc "github.com/ybbus/jsonrpc"
@@ -28,20 +28,20 @@ var licenseCmd = &cobra.Command{
 func doLicenseCmd(cmd *cobra.Command, args []string) {
 	walletType := getWalletType(cmd)
 	if walletType == wtypes.WalletTypeSoft && len(fromFlag) == 0 {
-		 utils.Error("The from address cannot be empty")
-		 return
+		utils.Error("The from address cannot be empty")
+		return
 	}
 
 	if len(licenseFlag) == 0 {
-		 utils.Error("The license file path cannot be empty")
-		 return
+		utils.Error("The license file path cannot be empty")
+		return
 	}
 
 	wallet, fromAddress, err := walletUnlockWithPath(cmd, fromFlag, pathFlag, passwordFlag)
-    if err != nil || wallet == nil {
-        return
-    }
-    defer wallet.Lock(fromAddress)
+	if err != nil || wallet == nil {
+		return
+	}
+	defer wallet.Lock(fromAddress)
 
 	var licenses []core.License
 	if err := json.Unmarshal([]byte(licenseFlag), &licenses); err != nil {
@@ -49,61 +49,61 @@ func doLicenseCmd(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	 licenseTx := &types.LicenseTx{
-	    Fee: types.Coins{
-	        SCPTWei: new(big.Int).SetUint64(0), // Assuming no script fee for now
-	        SPAYWei: new(big.Int).SetUint64(0), // Set appropriate fee here
-	    },
-	    Licenses: licenses, // Use the parsed licenses
-	    Issuer: types.TxInput{
-	        Address: fromAddress, // Set the issuer's address
-	    },
-}
+	licenseTx := &types.LicenseTx{
+		Fee: types.Coins{
+			SCPTWei: new(big.Int).SetUint64(0), // Assuming no script fee for now
+			SPAYWei: new(big.Int).SetUint64(0), // Set appropriate fee here
+		},
+		Licenses: licenses, // Use the parsed licenses
+		Issuer: types.TxInput{
+			Address: fromAddress, // Set the issuer's address
+		},
+	}
 
-  sig, err := wallet.Sign(fromAddress, licenseTx.SignBytes(chainIDFlag))
-  if err != nil {
+	sig, err := wallet.Sign(fromAddress, licenseTx.SignBytes(chainIDFlag))
+	if err != nil {
 		utils.Error("Failed to sign transaction: %v\n", err)
 		return
-  }
-  licenseTx.SetSignature(fromAddress, sig)
+	}
+	licenseTx.SetSignature(fromAddress, sig)
 
-  raw, err := types.TxToBytes(licenseTx)
-  if err != nil {
+	raw, err := types.TxToBytes(licenseTx)
+	if err != nil {
 		utils.Error("Failed to encode transaction: %v\n", err)
 		return
-  }
-  signedTx := hex.EncodeToString(raw)
+	}
+	signedTx := hex.EncodeToString(raw)
 
-  client := rpcc.NewRPCClient(viper.GetString(utils.CfgRemoteRPCEndpoint))
+	client := rpcc.NewRPCClient(viper.GetString(utils.CfgRemoteRPCEndpoint))
 
-  var res *jsonrpc.RPCResponse
-  if asyncFlag {
+	var res *jsonrpc.RPCResponse
+	if asyncFlag {
 		res, err = client.Call("script.BroadcastRawTransactionAsync", rpc.BroadcastRawTransactionArgs{TxBytes: signedTx})
-  } else {
+	} else {
 		res, err = client.Call("script.BroadcastRawTransaction", rpc.BroadcastRawTransactionArgs{TxBytes: signedTx})
-  }
+	}
 
-  if err != nil {
+	if err != nil {
 		utils.Error("Failed to broadcast transaction: %v\n", err)
 		return
-  }
-  if res.Error != nil {
+	}
+	if res.Error != nil {
 		utils.Error("Server returned error: %v\n", res.Error)
 		return
-  }
+	}
 
-  result := &rpc.BroadcastRawTransactionResult{}
-    err = res.GetObject(result)
-    if err != nil {
-        utils.Error("Failed to parse server response: %v\n", err)
-        return
-    }
-    formatted, err := json.MarshalIndent(result, "", "    ")
-    if err != nil {
-        utils.Error("Failed to parse server response: %v\n", err)
-        return
-    }
-    fmt.Printf("Successfully broadcasted transaction:\n%s\n", formatted)
+	result := &rpc.BroadcastRawTransactionResult{}
+	err = res.GetObject(result)
+	if err != nil {
+		utils.Error("Failed to parse server response: %v\n", err)
+		return
+	}
+	formatted, err := json.MarshalIndent(result, "", "    ")
+	if err != nil {
+		utils.Error("Failed to parse server response: %v\n", err)
+		return
+	}
+	fmt.Printf("Successfully broadcasted transaction:\n%s\n", formatted)
 }
 
 func init() {

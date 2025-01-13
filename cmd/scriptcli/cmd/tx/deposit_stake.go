@@ -10,20 +10,21 @@ import (
 
 	"github.com/scripttoken/script/crypto/bls"
 
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"github.com/scripttoken/script/cmd/scriptcli/cmd/utils"
 	"github.com/scripttoken/script/common"
 	"github.com/scripttoken/script/core"
 	"github.com/scripttoken/script/ledger/types"
 	"github.com/scripttoken/script/rpc"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	rpcc "github.com/ybbus/jsonrpc"
 )
 
 // depositStakeCmd represents the deposit stake command
 // Example:
-//		scriptcli tx deposit --chain="scriptnet" --source=2E833968E5bB786Ae419c4d13189fB081Cc43bab --holder=2E833968E5bB786Ae419c4d13189fB081Cc43bab --stake=6000000 --purpose=0 --seq=7
+//
+//	scriptcli tx deposit --chain="scriptnet" --source=2E833968E5bB786Ae419c4d13189fB081Cc43bab --holder=2E833968E5bB786Ae419c4d13189fB081Cc43bab --stake=6000000 --purpose=0 --seq=7
 var depositStakeCmd = &cobra.Command{
 	Use:     "deposit",
 	Short:   "Deposit stake to a validator or lightning",
@@ -62,16 +63,16 @@ func doDepositStakeCmd(cmd *cobra.Command, args []string) {
 
 		if len(holderFlag) > 2 && holderFlag[:2] == "0x" {
 			holderFlag = holderFlag[2:]
-	  }
+		}
 
-	  addr = common.HexToAddress(holderFlag)
-	  core.ReadFile("")
-	  err = core.ValidateLicense(addr)
-	  if err != nil {
+		addr = common.HexToAddress(holderFlag)
+		core.ReadFile("")
+		err = core.ValidateLicense(addr)
+		if err != nil {
 			utils.Error("License validation failed: %v\n", err)
-	  } else {
+		} else {
 			fmt.Println("License validation succeeded")
-	  }
+		}
 	}
 
 	if purposeFlag == core.StakeForValidator || purposeFlag == core.StakeForLightning {

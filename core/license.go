@@ -196,7 +196,6 @@ func ValidateLicense(licensee common.Address) error {
 	}
 
 	currentTime := uint64(time.Now().Unix())
-
 	if license.From > currentTime || license.To < currentTime {
 		verifiedLicenseCache[licensee] = false
 		return fmt.Errorf("current time is outside the valid license period")
@@ -210,7 +209,7 @@ func ValidateLicense(licensee common.Address) error {
 	}
 	if !signature.Verify(dataToValidate, license.Issuer) {
 		verifiedLicenseCache[licensee] = false
-		return fmt.Errorf("invalid license signature:%v, %v, %v, %x", license.Issuer.Hex(), base64.StdEncoding.EncodeToString(signature.ToBytes()), dataToValidate, keccak256(dataToValidate))	
+		return fmt.Errorf("invalid license signature:%v, %v, %v, %x", license.Issuer.Hex(), base64.StdEncoding.EncodeToString(signature.ToBytes()), dataToValidate, keccak256(dataToValidate))
 	}
 
 	// cache the verified status

@@ -10,32 +10,30 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"github.com/scripttoken/script/common"
 	cmn "github.com/scripttoken/script/common"
+	"github.com/scripttoken/script/core"
 	"github.com/scripttoken/script/crypto"
 	cn "github.com/scripttoken/script/p2p/connection"
 	nu "github.com/scripttoken/script/p2p/netutil"
 	p2ptypes "github.com/scripttoken/script/p2p/types"
 	"github.com/scripttoken/script/rlp"
-	"github.com/scripttoken/script/core"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 var logger *log.Entry = log.WithFields(log.Fields{"prefix": "p2p"})
 
 const maxExtraHandshakeInfo = 4096
 
-//
 // Peer models a peer node in a network
-//
 type Peer struct {
 	connection *cn.Connection
 
-	isPersistent bool
-	isOutbound   bool
-	isSeed       bool
-	netAddress   *nu.NetAddress
+	isPersistent   bool
+	isOutbound     bool
+	isSeed         bool
+	netAddress     *nu.NetAddress
 	isLicenseValid bool
 
 	nodeInfo p2ptypes.NodeInfo // information of the blockchain node of the peer
@@ -50,9 +48,7 @@ type Peer struct {
 	stopped bool
 }
 
-//
 // PeerConfig specifies the configuration of a peer
-//
 type PeerConfig struct {
 	HandshakeTimeout time.Duration
 	DialTimeout      time.Duration
@@ -221,17 +217,17 @@ func (peer *Peer) Handshake(sourceNodeInfo *p2ptypes.NodeInfo) error {
 
 	peer.nodeType = common.NodeType(peerType)
 
-		if(peer.nodeType == common.NodeTypeBlockchainNode) { //	NodeTypeBlockchainNode
-			err = core.ValidateLicense(targetPeerNodeInfo.PubKey.Address())
+	if peer.nodeType == common.NodeTypeBlockchainNode { //	NodeTypeBlockchainNode
+		err = core.ValidateLicense(targetPeerNodeInfo.PubKey.Address())
 		if err != nil {
-				peer.isLicenseValid = false
-				logger.Warnf("License validation failed: %v\n", err)
-				//return err #Should not return error here, peer is still added > votes not counted
+			peer.isLicenseValid = false
+			logger.Warnf("License validation failed: %v\n", err)
+			//return err #Should not return error here, peer is still added > votes not counted
 		} else {
-				logger.Infof("License validation succeeded")
-				peer.isLicenseValid = true
+			logger.Infof("License validation succeeded")
+			peer.isLicenseValid = true
 		}
-		}
+	}
 
 	remotePub, err := peer.connection.DoEncHandshake(
 		crypto.PrivKeyToECDSA(sourceNodeInfo.PrivKey), crypto.PubKeyToECDSA(targetNodePubKey))
