@@ -183,7 +183,7 @@ func (s *ValidatorSet) Validators() []Validator {
 //
 
 var (
-	MinValidatorStakeDeposit     *big.Int
+	MinValidatorStakeDeposit *big.Int
 	//MinValidatorStakeDeposit200K *big.Int
 )
 

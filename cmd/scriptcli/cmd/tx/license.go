@@ -98,6 +98,7 @@ func doLicenseCmd(cmd *cobra.Command, args []string) {
 		utils.Error("Failed to parse server response: %v\n", err)
 		return
 	}
+
 	formatted, err := json.MarshalIndent(result, "", "    ")
 	if err != nil {
 		utils.Error("Failed to parse server response: %v\n", err)

@@ -38,7 +38,6 @@ func (exec *LicenseTxExecutor) sanityCheck(chainID string, view *st.StoreView, v
 	}
 
 	//Compare issuer with secrets here
-
 	signBytes := tx.SignBytes(chainID)
 	if !tx.Issuer.Signature.Verify(signBytes, issuerAccount.Address) {
 		return result.Error("Signature verification failed for issuer: %X", signBytes)
@@ -61,7 +60,6 @@ func (exec *LicenseTxExecutor) process(chainID string, view *st.StoreView, viewS
 		return common.Hash{}, result.Error("Issuer account %v does not exist!", tx.Issuer.Address)
 	}
 
-
 	for _, license := range tx.Licenses {
 		err := core.WriteLicenseFile(license, "")
 		if err != nil {
@@ -74,14 +72,13 @@ func (exec *LicenseTxExecutor) process(chainID string, view *st.StoreView, viewS
 		return common.Hash{}, result.Error("Error re-reading license file: %v\n", err)
 	}
 
-	//Deduct trx fee
+	// Deduct trx fee
 	issuerAccount.Balance = issuerAccount.Balance.Minus(tx.Fee)
 
 	view.SetAccount(tx.Issuer.Address, issuerAccount)
 
 	txHash := types.TxID(chainID, tx)
 	return txHash, result.OK
-
 }
 
 func (exec *LicenseTxExecutor) getTxInfo(transaction types.Tx) *core.TxInfo {
@@ -96,6 +93,3 @@ func (exec *LicenseTxExecutor) getTxInfo(transaction types.Tx) *core.TxInfo {
 func (exec *LicenseTxExecutor) calculateEffectiveGasPrice(transaction types.Tx) *big.Int {
 	return new(big.Int).SetUint64(0)
 }
-
-
-

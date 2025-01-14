@@ -10,10 +10,10 @@ import (
 
 const (
 	StakeForValidator     uint8 = 0
-	StakeForLightning      uint8 = 1
+	StakeForLightning     uint8 = 1
 	StakeForEliteEdgeNode uint8 = 2
 
-	ReturnLockingPeriod uint64 = 201600      // number of blocks, approximately 14 days with 6 second block time
+	ReturnLockingPeriod uint64 = 201600     // number of blocks, approximately 14 days with 6 second block time
 	InvalidReturnHeight uint64 = ^uint64(0) // max uint64
 )
 

@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"time"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/scripttoken/script/common"
-	"github.com/spf13/viper"
 	"github.com/scripttoken/script/crypto"
 	"github.com/scripttoken/script/crypto/sha3"
+	"github.com/spf13/viper"
 )
 
 type LicenseReadFile struct {
@@ -34,14 +34,14 @@ type License struct {
 	Signature string         `json:"signature"` // Base64-encoded signature
 }
 
-// package-level variable to store the license map
+// Package-level variable to store the license map
 var licenseMap = make(map[common.Address]License)
 var licenseFile = viper.GetString(common.CfgLicenseDir) + "/license.json"
 
-// cache for pre-verified licenses
+// Cache for pre-verified licenses
 var verifiedLicenseCache = make(map[common.Address]bool)
 
-// read license file
+// Read license file
 func ReadFile(filename string) (map[common.Address]License, error) {
 	if filename == "" {
 		filename = viper.GetString(common.CfgLicenseDir) + "/license.json"
@@ -59,13 +59,12 @@ func ReadFile(filename string) (map[common.Address]License, error) {
 	}
 
 	var licenses []LicenseReadFile
-
 	err = json.Unmarshal(bytes, &licenses)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to unmarshal JSON: %v", err)
 	}
 
-	licenseMap = make(map[common.Address]License) // clear previous map
+	licenseMap = make(map[common.Address]License)        // clear previous map
 	verifiedLicenseCache = make(map[common.Address]bool) // clear previous cache
 
 	for _, licenseRF := range licenses {
@@ -97,7 +96,7 @@ func ReadFile(filename string) (map[common.Address]License, error) {
 			To:        uint64(to),
 			Items:     licenseRF.Items,
 			Signature: licenseRF.Signature,
-	  }
+		}
 
 		licenseMap[license.Licensee] = license
 	}
@@ -188,7 +187,7 @@ func ValidateLicense(licensee common.Address) error {
 	// Check cache first
 	if _, exists := verifiedLicenseCache[licensee]; exists {
 		return nil // License exists in the cache
-  }
+	}
 
 	license, exists := licenseMap[licensee]
 	if !exists {
