@@ -14,12 +14,12 @@ type LicenseWrapper struct {
 
 // LicenseJSON struct represents the JSON format of the License.
 type LicenseJSON struct {
-	Issuer    common.Address    `json:"issuer"`    // Issuer's address
-	Licensee  common.Address    `json:"licensee"`  // Licensee's address
-	From      uint64            `json:"from"`      // Start time (unix timestamp)
-	To        uint64            `json:"to"`        // End time (unix timestamp)
-	Items     []string          `json:"items"`     // Items covered by the license
-	Signature string 				 `json:"signature"` // Signature of the license
+	Issuer    common.Address `json:"issuer"`    // Issuer's address
+	Licensee  common.Address `json:"licensee"`  // Licensee's address
+	From      uint64         `json:"from"`      // Start time (unix timestamp)
+	To        uint64         `json:"to"`        // End time (unix timestamp)
+	Items     []string       `json:"items"`     // Items covered by the license
+	Signature string         `json:"signature"` // Signature of the license
 }
 
 // NewLicenseJSON creates a new LicenseJSON from a License.
@@ -63,6 +63,8 @@ func (lw *LicenseWrapper) UnmarshalJSON(data []byte) error {
 
 // String method for displaying License information.
 func (lw LicenseWrapper) String() string {
-	return fmt.Sprintf("License{Issuer: %v, Licensee: %v, From: %v, To: %v, Items: %v, Signature: %v}",
-		lw.License.Issuer, lw.License.Licensee, lw.License.From, lw.License.To, lw.License.Items, lw.License.Signature)
+	return fmt.Sprintf(
+		"License{Issuer: %v, Licensee: %v, From: %v, To: %v, Items: %v, Signature: %v}",
+		lw.License.Issuer, lw.License.Licensee, lw.License.From, lw.License.To, lw.License.Items, lw.License.Signature,
+	)
 }

@@ -111,9 +111,7 @@ func ConvertStringToSignature(signatureStr string) (*crypto.Signature, error) {
 		return nil, fmt.Errorf("failed to decode base64 signature: %v", err)
 	}
 
-	signature := crypto.NewSignature(decodedSig)
-
-	return signature, nil
+	return crypto.NewSignature(decodedSig), nil
 }
 
 func WriteLicenseFile(license License, filename string) error {
@@ -146,13 +144,11 @@ func WriteLicenseFile(license License, filename string) error {
 	if err != nil {
 		return fmt.Errorf("Failed to write newline to file: %v", err)
 	}
-
 	return nil
 }
 
 func ValidateIncomingLicense(license License) error {
 	currentTime := uint64(time.Now().Unix())
-
 	if license.From > currentTime || license.To < currentTime {
 		return fmt.Errorf("Current time is outside the valid license period")
 	}
@@ -160,21 +156,19 @@ func ValidateIncomingLicense(license License) error {
 	if !isLicenseForValidatorNode(license.Items) {
 		return fmt.Errorf("License items do not include 'VN'")
 	}
-
 	if !isLicenseForLightningNode(license.Items) {
 		return fmt.Errorf("License items do not include 'LN'")
 	}
-
-	dataToSign := concatenateLicenseData(license)
 
 	signature, err := ConvertStringToSignature(license.Signature)
 	if err != nil {
 		return fmt.Errorf("failed to convert string to signature: %v", err)
 	}
+
+	dataToSign := concatenateLicenseData(license)
 	if !signature.Verify(dataToSign, license.Issuer) {
 		return fmt.Errorf("invalid license signature")
 	}
-
 	return nil
 }
 
