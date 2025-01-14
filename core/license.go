@@ -162,12 +162,12 @@ func ValidateIncomingLicense(license License) error {
 
 	signature, err := ConvertStringToSignature(license.Signature)
 	if err != nil {
-		return fmt.Errorf("failed to convert string to signature: %v", err)
+		return fmt.Errorf("Failed to convert string to signature: %v", err)
 	}
 
 	dataToSign := concatenateLicenseData(license)
 	if !signature.Verify(dataToSign, license.Issuer) {
-		return fmt.Errorf("invalid license signature")
+		return fmt.Errorf("Invalid license signature")
 	}
 	return nil
 }
@@ -195,18 +195,18 @@ func ValidateLicense(licensee common.Address) error {
 	currentTime := uint64(time.Now().Unix())
 	if license.From > currentTime || license.To < currentTime {
 		verifiedLicenseCache[licensee] = false
-		return fmt.Errorf("current time is outside the valid license period")
+		return fmt.Errorf("Current time is outside the valid license period")
 	}
 
 	dataToValidate := concatenateLicenseData(license)
 
 	signature, err := ConvertStringToSignature(license.Signature)
 	if err != nil {
-		return fmt.Errorf("failed to convert string to signature: %v", err)
+		return fmt.Errorf("Failed to convert string to signature: %v", err)
 	}
 	if !signature.Verify(dataToValidate, license.Issuer) {
 		verifiedLicenseCache[licensee] = false
-		return fmt.Errorf("invalid license signature:%v, %v, %v, %x", license.Issuer.Hex(), base64.StdEncoding.EncodeToString(signature.ToBytes()), dataToValidate, keccak256(dataToValidate))
+		return fmt.Errorf("Invalid license signature:%v, %v, %v, %x", license.Issuer.Hex(), base64.StdEncoding.EncodeToString(signature.ToBytes()), dataToValidate, keccak256(dataToValidate))
 	}
 
 	// cache the verified status

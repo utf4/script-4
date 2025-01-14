@@ -8,11 +8,11 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/spf13/cobra"
 	"github.com/scripttoken/script/common"
 	"github.com/scripttoken/script/wallet"
 	"github.com/scripttoken/script/wallet/types"
 	wtypes "github.com/scripttoken/script/wallet/types"
+	"github.com/spf13/cobra"
 )
 
 const HARDENED_FLAG = 1 << 31
@@ -77,16 +77,16 @@ func SoftWalletUnlock(cfgPath, addressStr string, password string) (wtypes.Walle
 		return nil, common.Address{}, err
 	}
 
-/*
-	if password == "" || len(password) == 0 {
-		prompt := fmt.Sprintf("Please enter password: ")
-		password, err = utils.GetPassword(prompt)
-		if err != nil {
-			fmt.Printf("Failed to get password: %v\n", err)
-			return nil, common.Address{}, err
+	/*
+		if password == "" || len(password) == 0 {
+			prompt := fmt.Sprintf("Please enter password: ")
+			password, err = utils.GetPassword(prompt)
+			if err != nil {
+				fmt.Printf("Failed to get password: %v\n", err)
+				return nil, common.Address{}, err
+			}
 		}
-	}
-*/
+	*/
 
 	address := common.HexToAddress(addressStr)
 	err = wallet.Unlock(address, password, nil)
