@@ -44,12 +44,12 @@ var verifiedLicenseCache = make(map[common.Address]bool)
 // Read license file
 func ReadFile(filename string) (map[common.Address]License, error) {
 	if filename == "" {
-		filename = viper.GetString(common.CfgLicenseDir) + "/license.json"
+		filename = licenseFile
 	}
 
 	file, err := os.Open(filename)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to open file: %v at %v", err, viper.GetString(common.CfgLicenseDir))
+		return nil, fmt.Errorf("Failed to open file: %v at %v", err, licenseFile)
 	}
 	defer file.Close()
 
@@ -119,32 +119,32 @@ func ConvertStringToSignature(signatureStr string) (*crypto.Signature, error) {
 func WriteLicenseFile(license License, filename string) error {
 	err := ValidateIncomingLicense(license)
 	if err != nil {
-		return fmt.Errorf("license validation failed: %v", err)
+		return fmt.Errorf("License validation failed: %v", err)
 	}
 
 	if filename == "" {
-		filename = viper.GetString(common.CfgLicenseDir) + "/license.json"
+		filename = licenseFile
 	}
 
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
-		return fmt.Errorf("failed to open license file: %v", err)
+		return fmt.Errorf("Failed to open license file: %v", err)
 	}
 	defer file.Close()
 
 	licenseJSON, err := json.Marshal(license)
 	if err != nil {
-		return fmt.Errorf("failed to marshal license to JSON: %v", err)
+		return fmt.Errorf("Failed to marshal license to JSON: %v", err)
 	}
 
 	_, err = file.Write(licenseJSON)
 	if err != nil {
-		return fmt.Errorf("failed to write license to file: %v", err)
+		return fmt.Errorf("Failed to write license to file: %v", err)
 	}
 
 	_, err = file.WriteString("\n")
 	if err != nil {
-		return fmt.Errorf("failed to write newline to file: %v", err)
+		return fmt.Errorf("Failed to write newline to file: %v", err)
 	}
 
 	return nil
@@ -154,11 +154,15 @@ func ValidateIncomingLicense(license License) error {
 	currentTime := uint64(time.Now().Unix())
 
 	if license.From > currentTime || license.To < currentTime {
-		return fmt.Errorf("current time is outside the valid license period")
+		return fmt.Errorf("Current time is outside the valid license period")
 	}
 
 	if !isLicenseForValidatorNode(license.Items) {
-		return fmt.Errorf("license items do not include 'VN'")
+		return fmt.Errorf("License items do not include 'VN'")
+	}
+
+	if !isLicenseForLightningNode(license.Items) {
+		return fmt.Errorf("License items do not include 'LN'")
 	}
 
 	dataToSign := concatenateLicenseData(license)
@@ -221,6 +225,15 @@ func ValidateLicense(licensee common.Address) error {
 func isLicenseForValidatorNode(items []string) bool {
 	for _, item := range items {
 		if item == "VN" {
+			return true
+		}
+	}
+	return false
+}
+
+func isLicenseForLightningNode(items []string) bool {
+	for _, item := range items {
+		if item == "LN" {
 			return true
 		}
 	}
