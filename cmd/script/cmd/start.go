@@ -65,13 +65,12 @@ func runStart(cmd *cobra.Command, args []string) {
 	db, err := backend.NewLDBDatabase(mainDBPath, refDBPath,
 		viper.GetInt(common.CfgStorageLevelDBCacheSize),
 		viper.GetInt(common.CfgStorageLevelDBHandles))
-
-	rdb := rollingdb.NewRollingDB(dbPath, db)
-
 	if err != nil {
 		log.Fatalf("Failed to connect to the db. main: %v, ref: %v, err: %v",
 			mainDBPath, refDBPath, err)
 	}
+
+	rdb := rollingdb.NewRollingDB(dbPath, db)
 
 	// load snapshot
 	if len(snapshotPath) == 0 {

@@ -124,12 +124,12 @@ func (s *ValidatorSet) GetValidator(id common.Address) (Validator, error) {
 // AddValidator adds a validator to the validator set.
 func (s *ValidatorSet) AddValidator(validator Validator) {
 	logger.Printf("gov address: %v", viper.GetString(common.CfgGovAddress))
-	if validator.Address != common.HexToAddress(viper.GetString(common.CfgGovAddress)) {
-		err := ValidateLicense(validator.Address)
-		if err != nil {
-			logger.Errorf("Failed to add validator %v: %v", validator.Address, err)
-		}
-	}
+	// if validator.Address != common.HexToAddress(viper.GetString(common.CfgGovAddress)) {
+	// 	err := ValidateLicense(validator.Address)
+	// 	if err != nil {
+	// 		logger.Errorf("Failed to add validator %v: %v", validator.Address, err)
+	// 	}
+	// }
 	s.validators = append(s.validators, validator)
 	sort.Sort(ByID(s.validators))
 }
