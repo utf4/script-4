@@ -98,6 +98,10 @@ func ReadFile(filename string) (map[common.Address]License, error) {
 			Signature: licenseRF.Signature,
 		}
 
+		if err = ValidateIncomingLicense(license); err != nil {
+			return nil, fmt.Errorf("Failed to validate license for licensee %v: %v", license.Licensee.Hex(), err)
+		}
+
 		licenseMap[license.Licensee] = license
 	}
 
