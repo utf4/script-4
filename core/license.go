@@ -189,7 +189,7 @@ func ValidateLicense(licensee common.Address) error {
 
 	license, exists := licenseMap[licensee]
 	if !exists {
-		return fmt.Errorf("No license found for the given licensee public key")
+		return fmt.Errorf("No license found for the given licensee public key: %v", licensee)
 	}
 
 	currentTime := uint64(time.Now().Unix())
