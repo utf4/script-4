@@ -43,6 +43,7 @@ var verifiedLicenseCache = make(map[common.Address]bool)
 
 // Read license file
 func ReadFile(filename string) (map[common.Address]License, error) {
+	logger.Printf("Reading license file...")
 	if filename == "" {
 		filename = licenseFile
 	}
