@@ -94,9 +94,9 @@ func runStart(cmd *cobra.Command, args []string) {
 			}
 		}
 	}
- 
+
 	// Download license.json
-	log.Println("Downloading license file...")
+	fmt.Println("LICENSE_DOWNLOAD Downloading license file...")
 	err = downloadLicenseFile()
 	if err != nil {
 		log.Errorf("Failed to download license file: %v", err)
