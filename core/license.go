@@ -161,7 +161,7 @@ func ValidateIncomingLicense(license License) error {
 		return fmt.Errorf("LICENSE_VALIDATE_I Current time is outside the valid license period")
 	}
 
-	if !isLicenseForValidatorNode(license.Items) || !isLicenseForLightningNode(license.Items) {
+	if !isLicenseForValidatorNode(license.Items) && !isLicenseForLightningNode(license.Items) {
 		return fmt.Errorf("LICENSE_VALIDATE_I License items is empty.")
 	}
 
