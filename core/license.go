@@ -158,24 +158,21 @@ func WriteLicenseFile(license License, filename string) error {
 func ValidateIncomingLicense(license License) error {
 	currentTime := uint64(time.Now().Unix())
 	if license.From > currentTime || license.To < currentTime {
-		return fmt.Errorf("Current time is outside the valid license period")
+		return fmt.Errorf("LICENSE_VALIDATE_I Current time is outside the valid license period")
 	}
 
-	if !isLicenseForValidatorNode(license.Items) {
-		return fmt.Errorf("License items do not include 'VN'")
-	}
-	if !isLicenseForLightningNode(license.Items) {
-		return fmt.Errorf("License items do not include 'LN'")
+	if !isLicenseForValidatorNode(license.Items) || !isLicenseForLightningNode(license.Items) {
+		return fmt.Errorf("LICENSE_VALIDATE_I License items is empty.")
 	}
 
 	signature, err := ConvertStringToSignature(license.Signature)
 	if err != nil {
-		return fmt.Errorf("Failed to convert string to signature: %v", err)
+		return fmt.Errorf("LICENSE_VALIDATE_I Failed to convert string to signature: %v", err)
 	}
 
 	dataToSign := concatenateLicenseData(license)
 	if !signature.Verify(dataToSign, license.Issuer) {
-		return fmt.Errorf("Invalid license signature")
+		return fmt.Errorf("LICENSE_VALIDATE_I Invalid license signature")
 	}
 	return nil
 }
@@ -235,7 +232,7 @@ func isLicenseForValidatorNode(items []string) bool {
 
 func isLicenseForLightningNode(items []string) bool {
 	for _, item := range items {
-		if item == "LN" {
+		if item == "LN" || item == "LN-L" {
 			return true
 		}
 	}
