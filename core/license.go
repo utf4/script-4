@@ -43,26 +43,29 @@ var verifiedLicenseCache = make(map[common.Address]bool)
 
 // Read license file
 func ReadFile(filename string) (map[common.Address]License, error) {
+	fmt.Printf("LICENSE_READ License file path: %v", viper.GetString(common.CfgLicenseDir))
 	logger.Printf("Reading license file...")
 	if filename == "" {
 		filename = licenseFile
 	}
 
+	fmt.Printf("LICENSE_READ License file path: %v", filename)
+
 	file, err := os.Open(filename)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to open file: %v at %v", err, licenseFile)
+		return nil, fmt.Errorf("LICENSE_READ Failed to open file: %v at %v", err, licenseFile)
 	}
 	defer file.Close()
 
 	bytes, err := ioutil.ReadAll(file)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read file: %v", err)
+		return nil, fmt.Errorf("LICENSE_READ Failed to read file: %v", err)
 	}
 
 	var licenses []LicenseReadFile
 	err = json.Unmarshal(bytes, &licenses)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to unmarshal JSON: %v", err)
+		return nil, fmt.Errorf("LICENSE_READ Failed to unmarshal JSON: %v", err)
 	}
 
 	licenseMap = make(map[common.Address]License)        // clear previous map
@@ -82,12 +85,12 @@ func ReadFile(filename string) (map[common.Address]License, error) {
 		to := uint64(toTime.Unix())*/
 		from, err := strconv.ParseInt(licenseRF.From, 10, 64)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to parse 'From' field: %v", err)
+			return nil, fmt.Errorf("LICENSE_READ Failed to parse 'From' field: %v", err)
 		}
 
 		to, err := strconv.ParseInt(licenseRF.To, 10, 64)
 		if err != nil {
-			return nil, fmt.Errorf("Failed to parse 'To' field: %v", err)
+			return nil, fmt.Errorf("LICENSE_READ Failed to parse 'To' field: %v", err)
 		}
 
 		license := License{
@@ -100,7 +103,7 @@ func ReadFile(filename string) (map[common.Address]License, error) {
 		}
 
 		if err = ValidateIncomingLicense(license); err != nil {
-			return nil, fmt.Errorf("Failed to validate license for licensee %v: %v", license.Licensee.Hex(), err)
+			return nil, fmt.Errorf("LICENSE_READ Failed to validate license for licensee %v: %v", license.Licensee.Hex(), err)
 		}
 
 		licenseMap[license.Licensee] = license
@@ -194,24 +197,24 @@ func ValidateLicense(licensee common.Address) error {
 
 	license, exists := licenseMap[licensee]
 	if !exists {
-		return fmt.Errorf("No license found for the given licensee public key: %v", licensee)
+		return fmt.Errorf("LICENSE_VALIDATE No license found for the given licensee public key: %v", licensee)
 	}
 
 	currentTime := uint64(time.Now().Unix())
 	if license.From > currentTime || license.To < currentTime {
 		verifiedLicenseCache[licensee] = false
-		return fmt.Errorf("Current time is outside the valid license period")
+		return fmt.Errorf("LICENSE_VALIDATE Current time is outside the valid license period")
 	}
 
 	dataToValidate := concatenateLicenseData(license)
 
 	signature, err := ConvertStringToSignature(license.Signature)
 	if err != nil {
-		return fmt.Errorf("Failed to convert string to signature: %v", err)
+		return fmt.Errorf("LICENSE_VALIDATE Failed to convert string to signature: %v", err)
 	}
 	if !signature.Verify(dataToValidate, license.Issuer) {
 		verifiedLicenseCache[licensee] = false
-		return fmt.Errorf("Invalid license signature:%v, %v, %v, %x", license.Issuer.Hex(), base64.StdEncoding.EncodeToString(signature.ToBytes()), dataToValidate, keccak256(dataToValidate))
+		return fmt.Errorf("LICENSE_VALIDATE Invalid license signature:%v, %v, %v, %x", license.Issuer.Hex(), base64.StdEncoding.EncodeToString(signature.ToBytes()), dataToValidate, keccak256(dataToValidate))
 	}
 
 	// cache the verified status
