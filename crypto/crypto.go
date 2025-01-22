@@ -8,6 +8,7 @@ import (
 	"hash"
 	"io"
 	"math/big"
+	"strings"
 
 	"github.com/scripttoken/script/common"
 	"github.com/scripttoken/script/common/hexutil"
@@ -260,7 +261,9 @@ func (sig *Signature) Verify(msg common.Bytes, addr common.Address) bool {
 	}
 	fmt.Println("LICENSE_VALIDATE actual address ", addr)
 	fmt.Println("LICENSE_VALIDATE recovered address ", recoveredAddress)
-	if recoveredAddress != addr {
+	fmt.Println("LICENSE_VALIDATE actual address string ", addr.String())
+	fmt.Println("LICENSE_VALIDATE recovered address string", recoveredAddress.String())
+	if strings.EqualFold(addr.String(), recoveredAddress.String()) {
 		fmt.Println("LICENSE_VALIDATE Not matching..")
 		log.Println("CRYPTO: address mismatch")
 		return false
