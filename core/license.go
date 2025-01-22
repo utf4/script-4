@@ -41,6 +41,11 @@ var licenseFile = viper.GetString(common.CfgLicenseDir) + "/license.json"
 // Cache for pre-verified licenses
 var verifiedLicenseCache = make(map[common.Address]bool)
 
+// Set license filename globally
+func SetLicenseFile(filename string) {
+	licenseFile = filename
+}
+
 // Read license file
 func ReadFile(filename string) (map[common.Address]License, error) {
 	fmt.Printf("LICENSE_READ License file path: %v\n", viper.GetString(common.CfgLicenseDir))

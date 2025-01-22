@@ -102,9 +102,15 @@ func runStart(cmd *cobra.Command, args []string) {
 		log.Errorf("Failed to download license file: %v", err)
 	}
 
+	// Set filename for the license file
+	filename := viper.GetString(common.CfgLicenseDir) + "/license.json"
+	core.SetLicenseFile(filename)
+
+	fmt.Println("LICENSE_DOWNLOAD Filename set as: %v", filename)
+
 	// Read license file
 	log.Println("Reading license file...")
-	_, err = core.ReadFile(viper.GetString(common.CfgLicenseDir) + "/license.json")
+	_, err = core.ReadFile(filename)
 	if err != nil {
 		log.Errorf("Failed to read license file: %v", err)
 	}
