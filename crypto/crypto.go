@@ -235,7 +235,6 @@ func (sig *Signature) RecoverSignerAddress(msg common.Bytes) (common.Address, er
 		log.Println("CRYPTO: ercecover err RCA", err)
 		return common.Address{}, err
 	}
-	fmt.Println("LICENSE_VALIDATE recovered uncompressed key ", string(recoveredUncompressedPubKey))
 	pk, err := PublicKeyFromBytes(recoveredUncompressedPubKey)
 	fmt.Println("LICENSE_VALIDATE public key ", pk)
 	if err != nil {
@@ -259,8 +258,25 @@ func (sig *Signature) Verify(msg common.Bytes, addr common.Address) bool {
 		log.Println("CRYPTO: addr not rec")
 		return false
 	}
-	fmt.Println("LICENSE_VALIDATE_I actual address ", addr)
-	fmt.Println("LICENSE_VALIDATE_I recovered address ", recoveredAddress)
+	if recoveredAddress != addr {
+		log.Println("CRYPTO: address mismatch")
+		return false
+	}
+	return true
+}
+
+// Verify verifies the signature with given raw message and address.
+func (sig *Signature) VerifySignature(msg common.Bytes, addr common.Address) bool {
+	if sig == nil || sig.IsEmpty() {
+		log.Println("CRYPTO: sig empty")
+		return false
+	}
+	recoveredAddress, err := sig.RecoverSignerAddress(msg)
+	if err != nil {
+		log.Println("CRYPTO: addr not rec")
+		return false
+	}
+
 	fmt.Println("LICENSE_VALIDATE_I actual address string", addr.String())
 	fmt.Println("LICENSE_VALIDATE_I recovered address string", recoveredAddress.String())
 	if !strings.EqualFold(addr.String(), recoveredAddress.String()) {
@@ -269,6 +285,7 @@ func (sig *Signature) Verify(msg common.Bytes, addr common.Address) bool {
 		return false
 	}
 	log.Println("CRYPTO: all good. verified.")
+	fmt.Println("LICENSE_VALIDATE_II All good..")
 	return true
 }
 
