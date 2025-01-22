@@ -53,9 +53,7 @@ func ReadFile(filename string) (map[common.Address]License, error) {
 		filename = licenseFile
 	}
 
-	fmt.Printf("LICENSE_READ License file: %v\n", licenseFile)
 	fmt.Printf("LICENSE_READ License file path: %v\n", filename)
-
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, fmt.Errorf("LICENSE_READ Failed to open file: %v at %v", err, licenseFile)
