@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"crypto/ecdsa"
 	"encoding/json"
+	"fmt"
 	"hash"
 	"io"
 	"math/big"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/scripttoken/script/common"
 	"github.com/scripttoken/script/common/hexutil"
 	"github.com/scripttoken/script/rlp"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -34,9 +35,7 @@ func Keccak256Hash(data ...[]byte) (h common.Hash) {
 // ----------------------- Digital Signature APIs ----------------------- //
 //
 
-//
 // PrivateKey represents the private key
-//
 type PrivateKey struct {
 	privKey *ecdsa.PrivateKey
 }
@@ -74,9 +73,7 @@ func (sk *PrivateKey) Sign(msg common.Bytes) (*Signature, error) {
 	return sig, err
 }
 
-//
 // PublicKey represents the public key
-//
 type PublicKey struct {
 	pubKey *ecdsa.PublicKey
 }
@@ -169,9 +166,7 @@ func (pk *PublicKey) VerifySignature(msg common.Bytes, sig *Signature) bool {
 // 	return isValid
 // }
 
-//
 // Signature represents the digital signature
-//
 type Signature struct {
 	data common.Bytes
 }
@@ -239,8 +234,9 @@ func (sig *Signature) RecoverSignerAddress(msg common.Bytes) (common.Address, er
 		log.Println("CRYPTO: ercecover err RCA", err)
 		return common.Address{}, err
 	}
-
+	fmt.Println("LICENSE_VALIDATE recovered uncompressed key ", string(recoveredUncompressedPubKey))
 	pk, err := PublicKeyFromBytes(recoveredUncompressedPubKey)
+	fmt.Println("LICENSE_VALIDATE public key ", pk)
 	if err != nil {
 		log.Println("CRYPTO: pkfrombytes err RCA", err)
 		return common.Address{}, err
@@ -262,6 +258,8 @@ func (sig *Signature) Verify(msg common.Bytes, addr common.Address) bool {
 		log.Println("CRYPTO: addr not rec")
 		return false
 	}
+	fmt.Println("LICENSE_VALIDATE actual address ", addr)
+	fmt.Println("LICENSE_VALIDATE recovered address ", recoveredAddress)
 	if recoveredAddress != addr {
 		log.Println("CRYPTO: address mismatch")
 		return false
