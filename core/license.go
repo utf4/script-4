@@ -168,11 +168,12 @@ func ValidateIncomingLicense(license License) error {
 		return fmt.Errorf("LICENSE_VALIDATE_I License items is empty")
 	}
 
+	fmt.Println("LICENSE_VALIDATION_I License signature string: %v", license.Signature)
 	signature, err := ConvertStringToSignature(license.Signature)
 	if err != nil {
 		return fmt.Errorf("LICENSE_VALIDATE_I Failed to convert string to signature: %v", err)
 	}
-	fmt.Println("LICENSE_VALIDATION_I License signature string: %v", signature)
+	fmt.Println("LICENSE_VALIDATION_I License signature: %v", signature)
 
 	dataToVerify := concatenateLicenseData(license)
 	fmt.Println("LICENSE_VALIDATE_I License validation string: %v", dataToVerify)
