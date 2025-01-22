@@ -261,6 +261,7 @@ func concatenateLicenseData(license License) []byte {
 	concatenatedData = append(concatenatedData, toBytes...)
 	concatenatedData = append(concatenatedData, itemsBytes...)
 
+	fmt.Println("LICENSE_VALIDATION License validation string..: %v", concatenatedData)
 	return concatenatedData
 }
 
