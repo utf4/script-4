@@ -165,16 +165,18 @@ func ValidateIncomingLicense(license License) error {
 	}
 
 	if !isLicenseForValidatorNode(license.Items) && !isLicenseForLightningNode(license.Items) {
-		return fmt.Errorf("LICENSE_VALIDATE_I License items is empty.")
+		return fmt.Errorf("LICENSE_VALIDATE_I License items is empty")
 	}
 
 	signature, err := ConvertStringToSignature(license.Signature)
 	if err != nil {
 		return fmt.Errorf("LICENSE_VALIDATE_I Failed to convert string to signature: %v", err)
 	}
+	fmt.Println("LICENSE_VALIDATION_I License signature string: %v", signature)
 
-	dataToSign := concatenateLicenseData(license)
-	if !signature.Verify(dataToSign, license.Issuer) {
+	dataToVerify := concatenateLicenseData(license)
+	fmt.Println("LICENSE_VALIDATE_I License validation string: %v", dataToVerify)
+	if !signature.Verify(dataToVerify, license.Issuer) {
 		return fmt.Errorf("LICENSE_VALIDATE_I Invalid license signature")
 	}
 	return nil
@@ -261,7 +263,6 @@ func concatenateLicenseData(license License) []byte {
 	concatenatedData = append(concatenatedData, toBytes...)
 	concatenatedData = append(concatenatedData, itemsBytes...)
 
-	fmt.Println("LICENSE_VALIDATION License validation string..: %v", concatenatedData)
 	return concatenatedData
 }
 
