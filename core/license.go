@@ -186,8 +186,8 @@ func ValidateIncomingLicense(license License) error {
 	}
 	fmt.Println("LICENSE_VALIDATION_I License signature: %v", signature)
 
-	// dataToVerify := concatenateLicenseData(license)
-	if !signature.Verify([]byte(dataToVerify), license.Issuer) {
+	fmt.Println("LICENSE_VALIDATION_I issuer ", license.Issuer)
+	if !signature.Verify(common.Bytes(dataToVerify), license.Issuer) {
 		return fmt.Errorf("LICENSE_VALIDATE_I Invalid license signature")
 	}
 	return nil
