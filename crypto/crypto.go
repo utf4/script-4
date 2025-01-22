@@ -261,6 +261,7 @@ func (sig *Signature) Verify(msg common.Bytes, addr common.Address) bool {
 	fmt.Println("LICENSE_VALIDATE actual address ", addr)
 	fmt.Println("LICENSE_VALIDATE recovered address ", recoveredAddress)
 	if recoveredAddress != addr {
+		fmt.Println("LICENSE_VALIDATE Not matching..")
 		log.Println("CRYPTO: address mismatch")
 		return false
 	}
