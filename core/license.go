@@ -175,18 +175,10 @@ func ValidateIncomingLicense(license License) error {
 	licensee := strings.ToUpper(license.Licensee.Hex())
 	from := fmt.Sprintf("%d", license.From)
 	to := fmt.Sprintf("%d", license.To)
+	items := "VN"
 
-	var itemsBuffer bytes.Buffer
-	for _, item := range license.Items {
-		itemsBuffer.WriteString(item)
-	}
-	items := itemsBuffer.String()
-
-	licenseData := issuer + licensee + from + to + items
-	fmt.Println("LICENSE_VALIDATE license data..: %v", licenseData)
-
-	dataToVerify := crypto.Keccak256([]byte(licenseData))
-	fmt.Println("LICENSE_VALIDATE_I License validation string..: %v", dataToVerify)
+	dataToVerify := issuer + licensee + from + to + items
+	fmt.Println("LICENSE_VALIDATE license data..: %v", dataToVerify)
 
 	fmt.Println("LICENSE_VALIDATION_I License signature string: %v", license.Signature)
 	signature, err := ConvertStringToSignature(license.Signature)
@@ -196,7 +188,7 @@ func ValidateIncomingLicense(license License) error {
 	fmt.Println("LICENSE_VALIDATION_I License signature: %v", signature)
 
 	// dataToVerify := concatenateLicenseData(license)
-	if !signature.Verify(dataToVerify, license.Issuer) {
+	if !signature.Verify([]byte(dataToVerify), license.Issuer) {
 		return fmt.Errorf("LICENSE_VALIDATE_I Invalid license signature")
 	}
 	return nil
