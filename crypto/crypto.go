@@ -259,12 +259,12 @@ func (sig *Signature) Verify(msg common.Bytes, addr common.Address) bool {
 		log.Println("CRYPTO: addr not rec")
 		return false
 	}
-	fmt.Println("LICENSE_VALIDATE actual address ", addr)
-	fmt.Println("LICENSE_VALIDATE recovered address ", recoveredAddress)
-	fmt.Println("LICENSE_VALIDATE actual address string ", addr.String())
-	fmt.Println("LICENSE_VALIDATE recovered address string", recoveredAddress.String())
+	fmt.Println("LICENSE_VALIDATE_I actual address ", addr)
+	fmt.Println("LICENSE_VALIDATE_I recovered address ", recoveredAddress)
+	fmt.Println("LICENSE_VALIDATE_I actual address string ", addr.String())
+	fmt.Println("LICENSE_VALIDATE_I recovered address string", recoveredAddress.String())
 	if strings.EqualFold(addr.String(), recoveredAddress.String()) {
-		fmt.Println("LICENSE_VALIDATE Not matching..")
+		fmt.Println("LICENSE_VALIDATE_I Not matching..")
 		log.Println("CRYPTO: address mismatch")
 		return false
 	}
