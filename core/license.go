@@ -122,7 +122,7 @@ func ConvertStringToSignature(signatureStr string) (*crypto.Signature, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode base64 signature: %v", err)
 	}
-
+	fmt.Println("LICENSE_VALIDATE decoded signature ", decodedSig)
 	return crypto.NewSignature(decodedSig), nil
 }
 
