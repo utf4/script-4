@@ -1,6 +1,7 @@
 package core
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/scripttoken/script/common"
 	"github.com/scripttoken/script/crypto"
+
 	"github.com/scripttoken/script/crypto/sha3"
 	"github.com/spf13/viper"
 )
@@ -159,6 +161,7 @@ func WriteLicenseFile(license License, filename string) error {
 }
 
 func ValidateIncomingLicense(license License) error {
+	fmt.Println("LICENSE_VALIDATION Starting license validation")
 	currentTime := uint64(time.Now().Unix())
 	if license.From > currentTime || license.To < currentTime {
 		return fmt.Errorf("LICENSE_VALIDATE_I Current time is outside the valid license period")
@@ -168,6 +171,23 @@ func ValidateIncomingLicense(license License) error {
 		return fmt.Errorf("LICENSE_VALIDATE_I License items is empty")
 	}
 
+	issuer := strings.ToUpper(license.Issuer.Hex())
+	licensee := strings.ToUpper(license.Licensee.Hex())
+	from := fmt.Sprintf("%d", license.From)
+	to := fmt.Sprintf("%d", license.To)
+
+	var itemsBuffer bytes.Buffer
+	for _, item := range license.Items {
+		itemsBuffer.WriteString(item)
+	}
+	items := itemsBuffer.String()
+
+	licenseData := issuer + licensee + from + to + items
+	fmt.Println("LICENSE_VALIDATE license data..: %v", licenseData)
+
+	dataToVerify := crypto.Keccak256([]byte(licenseData))
+	fmt.Println("LICENSE_VALIDATE_I License validation string..: %v", dataToVerify)
+
 	fmt.Println("LICENSE_VALIDATION_I License signature string: %v", license.Signature)
 	signature, err := ConvertStringToSignature(license.Signature)
 	if err != nil {
@@ -175,13 +195,69 @@ func ValidateIncomingLicense(license License) error {
 	}
 	fmt.Println("LICENSE_VALIDATION_I License signature: %v", signature)
 
-	dataToVerify := concatenateLicenseData(license)
-	fmt.Println("LICENSE_VALIDATE_I License validation string: %v", dataToVerify)
+	// dataToVerify := concatenateLicenseData(license)
 	if !signature.Verify(dataToVerify, license.Issuer) {
 		return fmt.Errorf("LICENSE_VALIDATE_I Invalid license signature")
 	}
 	return nil
 }
+
+// func ValidateIncomingLicense(license License) error {
+// 	// Step 1: Prepare the concatenated license data.
+// 	issuer := strings.ToUpper(license.Issuer.Hex())
+// 	licensee := strings.ToUpper(license.Licensee.Hex())
+// 	from := fmt.Sprintf("%d", license.From)
+// 	to := fmt.Sprintf("%d", license.To)
+
+// 	// Concatenate items as a single string.
+// 	var itemsBuffer bytes.Buffer
+// 	for _, item := range license.Items {
+// 		itemsBuffer.WriteString(item)
+// 	}
+// 	items := itemsBuffer.String()
+
+// 	// Combine all parts into a single string.
+// 	licenseData := issuer + licensee + from + to + items
+
+// 	// Step 2: Compute the Keccak-256 hash of the license data.
+// 	hash := crypto.Keccak256([]byte(licenseData))
+
+// 	// Step 3: Decode the Base64-encoded signature.
+// 	decodedSignature, err := base64.StdEncoding.DecodeString(license.Signature)
+// 	if err != nil {
+// 		return fmt.Errorf("failed to decode signature: %v", err)
+// 	}
+
+// 	// Step 4: Split the signature into R and S values.
+// 	if len(decodedSignature) != 64 {
+// 		return fmt.Errorf("invalid signature length: %d", len(decodedSignature))
+// 	}
+// 	r := new(big.Int).SetBytes(decodedSignature[:32])
+// 	s := new(big.Int).SetBytes(decodedSignature[32:])
+
+// 	// Step 5: Recover the public key from the signature and hash.
+// 	publicKey, err := crypto.SigToPub(hash, append(decodedSignature, 0)) // Add recovery ID as 0.
+// 	if err != nil {
+// 		return fmt.Errorf("failed to recover public key: %v", err)
+// 	}
+
+// 	// Step 6: Convert the issuer's address into a public key.
+// 	expectedAddress := crypto.PubkeyToAddress(*publicKey)
+
+// 	// Step 7: Verify the recovered address matches the issuer address.
+// 	if !strings.EqualFold(expectedAddress.Hex(), license.Issuer.Hex()) {
+// 		return fmt.Errorf("signature verification failed: issuer address does not match")
+// 	}
+
+// 	// Optional: Verify the validity period of the license.
+// 	currentTimestamp := uint64(time.Now().Unix())
+// 	if currentTimestamp < license.From || currentTimestamp > license.To {
+// 		return fmt.Errorf("license is not valid for the current time")
+// 	}
+
+// 	// License verification successful.
+// 	return nil
+// }
 
 func keccak256(data ...[]byte) []byte {
 	d := sha3.NewKeccak256()
