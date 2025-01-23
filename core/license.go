@@ -139,8 +139,7 @@ func ConvertDERToRaw(derSig []byte) ([]byte, error) {
 	copy(r[32-len(rBytes):], rBytes)
 	copy(s[32-len(sBytes):], sBytes)
 
-	v := byte(27)
-
+	v := byte(0)
 	return append(append(r, s...), v), nil
 }
 
