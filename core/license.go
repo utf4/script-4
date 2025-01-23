@@ -1,10 +1,13 @@
 package core
 
 import (
+	"encoding/asn1"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
+	"math/big"
 	"os"
 	"strconv"
 	"strings"
@@ -116,14 +119,46 @@ func ReadFile(filename string) (map[common.Address]License, error) {
 	return licenseMap, nil
 }
 
+type ECDSASignature struct {
+	R, S *big.Int
+}
+
+func ConvertDERToRaw(derSig []byte) ([]byte, error) {
+	var sig ECDSASignature
+	_, err := asn1.Unmarshal(derSig, &sig)
+	if err != nil {
+		return nil, errors.New("failed to parse DER signature")
+	}
+
+	// Ensure r and s are 32 bytes each
+	rBytes := sig.R.Bytes()
+	sBytes := sig.S.Bytes()
+
+	r := make([]byte, 32)
+	s := make([]byte, 32)
+	copy(r[32-len(rBytes):], rBytes)
+	copy(s[32-len(sBytes):], sBytes)
+
+	v := byte(27)
+
+	return append(append(r, s...), v), nil
+}
+
 // ConvertStringToSignature converts a base64-encoded string to a Signature object.
 func ConvertStringToSignature(signatureStr string) (*crypto.Signature, error) {
 	decodedSig, err := base64.StdEncoding.DecodeString(signatureStr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode base64 signature: %v", err)
 	}
+
 	fmt.Println("LICENSE_VALIDATE decoded signature ", decodedSig)
-	return crypto.NewSignature(decodedSig), nil
+	rawSig, err := ConvertDERToRaw(decodedSig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert DER to raw signature: %v", err)
+	}
+	fmt.Println("LICENSE_VALIDATE raw signature (converted):", rawSig)
+
+	return crypto.NewSignature(rawSig), nil
 }
 
 func WriteLicenseFile(license License, filename string) error {
