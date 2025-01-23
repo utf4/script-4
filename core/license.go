@@ -184,12 +184,12 @@ func ValidateIncomingLicense(license License) error {
 	if err != nil {
 		return fmt.Errorf("LICENSE_VALIDATE_I Failed to convert string to signature: %v", err)
 	}
-	fmt.Println("LICENSE_VALIDATION_I License signature: %v", signature)
+	fmt.Println("LICENSE_VALIDATION_I License signature: %v", signature.ToBytes().String())
 
 	fmt.Println("LICENSE_VALIDATION_I issuer ", license.Issuer)
 	isValid := signature.VerifySignature(common.Bytes(dataToVerify), license.Issuer)
 	fmt.Println("LICENSE_VALIDATION_II isValid ", isValid)
-	if !isValid{
+	if !isValid {
 		return fmt.Errorf("LICENSE_VALIDATE_I Invalid license signature")
 	}
 	return nil
@@ -284,7 +284,7 @@ func ValidateLicense(licensee common.Address) error {
 	if err != nil {
 		return fmt.Errorf("LICENSE_VALIDATE Failed to convert string to signature: %v", err)
 	}
-	if !signature.Verify(dataToValidate, license.Issuer) {
+	if !signature.VerifySignature(dataToValidate, license.Issuer) {
 		verifiedLicenseCache[licensee] = false
 		return fmt.Errorf("LICENSE_VALIDATE Invalid license signature:%v, %v, %v, %x", license.Issuer.Hex(), base64.StdEncoding.EncodeToString(signature.ToBytes()), dataToValidate, keccak256(dataToValidate))
 	}
@@ -332,7 +332,7 @@ func concatenateLicenseData(license License) []byte {
 	concatenatedData = append(concatenatedData, fromBytes...)
 	concatenatedData = append(concatenatedData, toBytes...)
 	concatenatedData = append(concatenatedData, itemsBytes...)
-
+	fmt.Println("LICENSE_ISSUE Concatenated data ", string(concatenatedData))
 	return concatenatedData
 }
 

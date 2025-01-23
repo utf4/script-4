@@ -229,14 +229,17 @@ func (sig *Signature) IsEmpty() bool {
 // RecoverSignerAddress recovers the address of the signer for the given message
 func (sig *Signature) RecoverSignerAddress(msg common.Bytes) (common.Address, error) {
 	msgHash := keccak256(msg)
+	fmt.Println("LICENSE_ISSUE HASH..", msgHash)
+	fmt.Println("LICENSE_ISSUE HASH Length..", len(msgHash))
+
 	log.Println("CRYPTO: msgHash RCA", msgHash)
+	fmt.Println("LICENSE_ISSUE ecrecover..")
 	recoveredUncompressedPubKey, err := ecrecover(msgHash, sig.ToBytes())
 	if err != nil {
 		log.Println("CRYPTO: ercecover err RCA", err)
 		return common.Address{}, err
 	}
 	pk, err := PublicKeyFromBytes(recoveredUncompressedPubKey)
-	fmt.Println("LICENSE_VALIDATE public key ", pk)
 	if err != nil {
 		log.Println("CRYPTO: pkfrombytes err RCA", err)
 		return common.Address{}, err
@@ -267,13 +270,16 @@ func (sig *Signature) Verify(msg common.Bytes, addr common.Address) bool {
 
 // Verify verifies the signature with given raw message and address.
 func (sig *Signature) VerifySignature(msg common.Bytes, addr common.Address) bool {
+	fmt.Println("LICENSE_ISSUE Verifying sign..")
 	if sig == nil || sig.IsEmpty() {
 		log.Println("CRYPTO: sig empty")
 		return false
 	}
+	fmt.Println("LICENSE_ISSUE recovering signer..")
 	recoveredAddress, err := sig.RecoverSignerAddress(msg)
 	if err != nil {
-		log.Println("CRYPTO: addr not rec")
+		fmt.Println("LICENSE_ISSUE recovering err ..", err)
+		log.Println("CRYPTO: addr not rec", err)
 		return false
 	}
 
