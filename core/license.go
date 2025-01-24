@@ -226,7 +226,7 @@ func ValidateIncomingLicense(license License) error {
 
 		fmt.Println("LICENSE_VALIDATION_I issuer ", license.Issuer)
 		isValid := signature.VerifySignature(common.Bytes(dataToVerify), license.Issuer)
-		fmt.Println("LICENSE_VALIDATION_II isValid ", isValid)
+		fmt.Println("LICENSE_VALIDATION_II isValid ", isValid, i)
 		if !isValid {
 			// return fmt.Errorf("LICENSE_VALIDATE_I Invalid license signature")
 			fmt.Println("LICENSE_VALIDATE_I Invalid license signature")
