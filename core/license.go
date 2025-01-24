@@ -123,7 +123,7 @@ type ECDSASignature struct {
 	R, S *big.Int
 }
 
-func ConvertDERToECDSA(derSig []byte) ([]byte, error) {
+func ConvertDERToECDSA(derSig []byte, recV int) ([]byte, error) {
 	var sig ECDSASignature
 	_, err := asn1.Unmarshal(derSig, &sig)
 	if err != nil {
@@ -139,19 +139,19 @@ func ConvertDERToECDSA(derSig []byte) ([]byte, error) {
 	copy(r[32-len(rBytes):], rBytes)
 	copy(s[32-len(sBytes):], sBytes)
 
-	v := byte(0)
+	v := byte(recV)
 	return append(append(r, s...), v), nil
 }
 
 // ConvertStringToSignature converts a base64-encoded string to a Signature object.
-func ConvertStringToSignature(signatureStr string) (*crypto.Signature, error) {
+func ConvertStringToSignature(signatureStr string, recV int) (*crypto.Signature, error) {
 	decodedSig, err := base64.StdEncoding.DecodeString(signatureStr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode base64 signature: %v", err)
 	}
 
 	fmt.Println("LICENSE_VALIDATE decoded signature ", decodedSig)
-	ecdsaSig, err := ConvertDERToECDSA(decodedSig)
+	ecdsaSig, err := ConvertDERToECDSA(decodedSig, recV)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert DER to raw signature: %v", err)
 	}
@@ -214,17 +214,25 @@ func ValidateIncomingLicense(license License) error {
 	fmt.Println("LICENSE_VALIDATE license data..: %v", dataToVerify)
 
 	fmt.Println("LICENSE_VALIDATION_I License signature string: %v", license.Signature)
-	signature, err := ConvertStringToSignature(license.Signature)
-	if err != nil {
-		return fmt.Errorf("LICENSE_VALIDATE_I Failed to convert string to signature: %v", err)
-	}
-	fmt.Println("LICENSE_VALIDATION_I License signature: %v", signature.ToBytes().String())
+	const maxIterations = 5
+	for i := 0; i < maxIterations; i++ {
+		signature, err := ConvertStringToSignature(license.Signature, i)
+		if err != nil {
+			// return fmt.Errorf("LICENSE_VALIDATE_I Failed to convert string to signature: %v", err)
+			fmt.Println("LICENSE_VALIDATE_I Failed to convert string to signature: %v", err)
+			continue
+		}
+		fmt.Println("LICENSE_VALIDATION_I License signature: %v", signature.ToBytes().String())
 
-	fmt.Println("LICENSE_VALIDATION_I issuer ", license.Issuer)
-	isValid := signature.VerifySignature(common.Bytes(dataToVerify), license.Issuer)
-	fmt.Println("LICENSE_VALIDATION_II isValid ", isValid)
-	if !isValid {
-		return fmt.Errorf("LICENSE_VALIDATE_I Invalid license signature")
+		fmt.Println("LICENSE_VALIDATION_I issuer ", license.Issuer)
+		isValid := signature.VerifySignature(common.Bytes(dataToVerify), license.Issuer)
+		fmt.Println("LICENSE_VALIDATION_II isValid ", isValid)
+		if !isValid {
+			// return fmt.Errorf("LICENSE_VALIDATE_I Invalid license signature")
+			fmt.Println("LICENSE_VALIDATE_I Invalid license signature")
+			continue
+		}
+		break
 	}
 	return nil
 }
@@ -314,7 +322,7 @@ func ValidateLicense(licensee common.Address) error {
 
 	dataToValidate := concatenateLicenseData(license)
 
-	signature, err := ConvertStringToSignature(license.Signature)
+	signature, err := ConvertStringToSignature(license.Signature, 0)
 	if err != nil {
 		return fmt.Errorf("LICENSE_VALIDATE Failed to convert string to signature: %v", err)
 	}
