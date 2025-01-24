@@ -123,7 +123,7 @@ type ECDSASignature struct {
 	R, S *big.Int
 }
 
-func ConvertDERToRaw(derSig []byte) ([]byte, error) {
+func ConvertDERToECDSA(derSig []byte) ([]byte, error) {
 	var sig ECDSASignature
 	_, err := asn1.Unmarshal(derSig, &sig)
 	if err != nil {
@@ -151,13 +151,13 @@ func ConvertStringToSignature(signatureStr string) (*crypto.Signature, error) {
 	}
 
 	fmt.Println("LICENSE_VALIDATE decoded signature ", decodedSig)
-	rawSig, err := ConvertDERToRaw(decodedSig)
+	ecdsaSig, err := ConvertDERToECDSA(decodedSig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert DER to raw signature: %v", err)
 	}
-	fmt.Println("LICENSE_VALIDATE raw signature (converted):", rawSig)
+	fmt.Println("LICENSE_VALIDATE raw signature (converted):", ecdsaSig)
 
-	return crypto.NewSignature(rawSig), nil
+	return crypto.NewSignature(ecdsaSig), nil
 }
 
 func WriteLicenseFile(license License, filename string) error {
