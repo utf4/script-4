@@ -214,7 +214,7 @@ func ValidateIncomingLicense(license License) error {
 	fmt.Println("LICENSE_VALIDATE license data..: %v", dataToVerify)
 
 	fmt.Println("LICENSE_VALIDATION_I License signature string: %v", license.Signature)
-	const maxIterations = 5
+	const maxIterations = 2
 	for i := 0; i < maxIterations; i++ {
 		signature, err := ConvertStringToSignature(license.Signature, i)
 		if err != nil {
