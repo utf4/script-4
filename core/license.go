@@ -196,12 +196,15 @@ func WriteLicenseFile(license License, filename string) error {
 func ValidateIncomingLicense(license License) error {
 	fmt.Println("LICENSE_VALIDATION Starting license validation")
 	currentTime := uint64(time.Now().Unix())
+
+	// Validate the license period
 	if license.From > currentTime || license.To < currentTime {
 		return fmt.Errorf("LICENSE_VALIDATE_I Current time is outside the valid license period")
 	}
 
+	// Validate the license items
 	if !isLicenseForValidatorNode(license.Items) && !isLicenseForLightningNode(license.Items) {
-		return fmt.Errorf("LICENSE_VALIDATE_I License items is empty")
+		return fmt.Errorf("LICENSE_VALIDATE_I License items are invalid or empty")
 	}
 
 	issuer := strings.ToUpper(license.Issuer.Hex())
@@ -211,30 +214,38 @@ func ValidateIncomingLicense(license License) error {
 	items := "VN"
 
 	dataToVerify := issuer + licensee + from + to + items
-	fmt.Println("LICENSE_VALIDATE license data..: %v", dataToVerify)
+	fmt.Printf("LICENSE_VALIDATE license data: %s\n", dataToVerify)
 
-	fmt.Println("LICENSE_VALIDATION_I License signature string: %v", license.Signature)
-	const maxIterations = 2
-	for i := 0; i < maxIterations; i++ {
-		signature, err := ConvertStringToSignature(license.Signature, i)
+	fmt.Printf("LICENSE_VALIDATION_I License signature string: %s\n", license.Signature)
+
+	// Try both values of v (0 and 1)
+	var validationError error
+	for v := 0; v <= 1; v++ {
+		signature, err := ConvertStringToSignature(license.Signature, v)
 		if err != nil {
-			// return fmt.Errorf("LICENSE_VALIDATE_I Failed to convert string to signature: %v", err)
-			fmt.Println("LICENSE_VALIDATE_I Failed to convert string to signature: %v", err)
+			fmt.Printf("LICENSE_VALIDATE_I Failed to convert string to signature (v=%d): %v\n", v, err)
+			validationError = fmt.Errorf("failed to convert string to signature (v=%d): %w", v, err)
 			continue
 		}
-		fmt.Println("LICENSE_VALIDATION_I License signature: %v", signature.ToBytes().String())
 
-		fmt.Println("LICENSE_VALIDATION_I issuer ", license.Issuer)
+		fmt.Printf("LICENSE_VALIDATION_I License signature (v=%d): %s\n", v, signature.ToBytes().String())
+		fmt.Printf("LICENSE_VALIDATION_I Issuer: %s\n", license.Issuer)
+
 		isValid := signature.VerifySignature(common.Bytes(dataToVerify), license.Issuer)
-		fmt.Println("LICENSE_VALIDATION_II isValid ", isValid, i)
-		if !isValid {
-			// return fmt.Errorf("LICENSE_VALIDATE_I Invalid license signature")
-			fmt.Println("LICENSE_VALIDATE_I Invalid license signature")
-			continue
+		fmt.Printf("LICENSE_VALIDATION_II isValid: %v (v=%d)\n", isValid, v)
+		if isValid {
+			fmt.Println("LICENSE_VALIDATE_I License is valid.")
+			return nil
 		}
-		break
+
+		fmt.Printf("LICENSE_VALIDATE_I Invalid license signature (v=%d)\n", v)
 	}
-	return nil
+
+	// If no valid signature was found, return the last validation error
+	if validationError != nil {
+		return fmt.Errorf("LICENSE_VALIDATE_I Invalid license: %w", validationError)
+	}
+	return fmt.Errorf("LICENSE_VALIDATE_I Invalid license: no valid signature found")
 }
 
 // func ValidateIncomingLicense(license License) error {
