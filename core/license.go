@@ -123,7 +123,7 @@ type ECDSASignature struct {
 	R, S *big.Int
 }
 
-func ConvertDERToECDSA(derSig []byte, recV int) ([]byte, error) {
+func ConvertDERToECDSA(derSig []byte, recKey int) ([]byte, error) {
 	var sig ECDSASignature
 	_, err := asn1.Unmarshal(derSig, &sig)
 	if err != nil {
@@ -139,19 +139,19 @@ func ConvertDERToECDSA(derSig []byte, recV int) ([]byte, error) {
 	copy(r[32-len(rBytes):], rBytes)
 	copy(s[32-len(sBytes):], sBytes)
 
-	v := byte(recV)
+	v := byte(recKey)
 	return append(append(r, s...), v), nil
 }
 
 // ConvertStringToSignature converts a base64-encoded string to a Signature object.
-func ConvertStringToSignature(signatureStr string, recV int) (*crypto.Signature, error) {
+func ConvertStringToSignature(signatureStr string, recKey int) (*crypto.Signature, error) {
 	decodedSig, err := base64.StdEncoding.DecodeString(signatureStr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode base64 signature: %v", err)
 	}
 
 	fmt.Println("LICENSE_VALIDATE decoded signature ", decodedSig)
-	ecdsaSig, err := ConvertDERToECDSA(decodedSig, recV)
+	ecdsaSig, err := ConvertDERToECDSA(decodedSig, recKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert DER to raw signature: %v", err)
 	}
@@ -207,20 +207,11 @@ func ValidateIncomingLicense(license License) error {
 		return fmt.Errorf("LICENSE_VALIDATE_I License items are invalid or empty")
 	}
 
-	issuer := strings.ToUpper(license.Issuer.Hex())
-	licensee := strings.ToUpper(license.Licensee.Hex())
-	from := fmt.Sprintf("%d", license.From)
-	to := fmt.Sprintf("%d", license.To)
-	items := "VN"
-
-	dataToVerify := issuer + licensee + from + to + items
-	fmt.Println("LICENSE_VALIDATE license data: %s\n", dataToVerify)
-
-	fmt.Println("LICENSE_VALIDATION_I License signature string: %s\n", license.Signature)
-
 	// Try both values of v (0 and 1)
 	var validationError error
+	dataToValidate := concatenateLicenseData(license)
 	for v := 0; v <= 1; v++ {
+		// Convert string signature to the object
 		signature, err := ConvertStringToSignature(license.Signature, v)
 		if err != nil {
 			fmt.Println("LICENSE_VALIDATE_I Failed to convert string to signature (v=%d): %v\n", v, err)
@@ -228,17 +219,13 @@ func ValidateIncomingLicense(license License) error {
 			continue
 		}
 
-		fmt.Println("LICENSE_VALIDATION_I License signature (v=%d): %s\n", v, signature.ToBytes().String())
-		fmt.Println("LICENSE_VALIDATION_I Issuer: %s\n", license.Issuer)
-
-		isValid := signature.VerifySignature(common.Bytes(dataToVerify), license.Issuer)
+		// Verify license signature
+		isValid := signature.VerifySignature(dataToValidate, license.Issuer)
 		fmt.Printf("LICENSE_VALIDATION_II isValid: %v (v=%d)\n", isValid, v)
 		if isValid {
 			fmt.Println("LICENSE_VALIDATE_I License is valid.")
 			return nil
 		}
-
-		fmt.Println("LICENSE_VALIDATE_I Invalid license signature (v=%d)\n", v)
 	}
 
 	if validationError != nil {
@@ -246,63 +233,6 @@ func ValidateIncomingLicense(license License) error {
 	}
 	return fmt.Errorf("LICENSE_VALIDATE_I Invalid license: no valid signature found")
 }
-
-// func ValidateIncomingLicense(license License) error {
-// 	// Step 1: Prepare the concatenated license data.
-// 	issuer := strings.ToUpper(license.Issuer.Hex())
-// 	licensee := strings.ToUpper(license.Licensee.Hex())
-// 	from := fmt.Sprintf("%d", license.From)
-// 	to := fmt.Sprintf("%d", license.To)
-
-// 	// Concatenate items as a single string.
-// 	var itemsBuffer bytes.Buffer
-// 	for _, item := range license.Items {
-// 		itemsBuffer.WriteString(item)
-// 	}
-// 	items := itemsBuffer.String()
-
-// 	// Combine all parts into a single string.
-// 	licenseData := issuer + licensee + from + to + items
-
-// 	// Step 2: Compute the Keccak-256 hash of the license data.
-// 	hash := crypto.Keccak256([]byte(licenseData))
-
-// 	// Step 3: Decode the Base64-encoded signature.
-// 	decodedSignature, err := base64.StdEncoding.DecodeString(license.Signature)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to decode signature: %v", err)
-// 	}
-
-// 	// Step 4: Split the signature into R and S values.
-// 	if len(decodedSignature) != 64 {
-// 		return fmt.Errorf("invalid signature length: %d", len(decodedSignature))
-// 	}
-// 	r := new(big.Int).SetBytes(decodedSignature[:32])
-// 	s := new(big.Int).SetBytes(decodedSignature[32:])
-
-// 	// Step 5: Recover the public key from the signature and hash.
-// 	publicKey, err := crypto.SigToPub(hash, append(decodedSignature, 0)) // Add recovery ID as 0.
-// 	if err != nil {
-// 		return fmt.Errorf("failed to recover public key: %v", err)
-// 	}
-
-// 	// Step 6: Convert the issuer's address into a public key.
-// 	expectedAddress := crypto.PubkeyToAddress(*publicKey)
-
-// 	// Step 7: Verify the recovered address matches the issuer address.
-// 	if !strings.EqualFold(expectedAddress.Hex(), license.Issuer.Hex()) {
-// 		return fmt.Errorf("signature verification failed: issuer address does not match")
-// 	}
-
-// 	// Optional: Verify the validity period of the license.
-// 	currentTimestamp := uint64(time.Now().Unix())
-// 	if currentTimestamp < license.From || currentTimestamp > license.To {
-// 		return fmt.Errorf("license is not valid for the current time")
-// 	}
-
-// 	// License verification successful.
-// 	return nil
-// }
 
 func keccak256(data ...[]byte) []byte {
 	d := sha3.NewKeccak256()
@@ -330,22 +260,33 @@ func ValidateLicense(licensee common.Address) error {
 		return fmt.Errorf("LICENSE_VALIDATE Current time is outside the valid license period")
 	}
 
+	var validationError error
 	dataToValidate := concatenateLicenseData(license)
+	for v := 0; v <= 1; v++ {
+		// Convert string signature to the object
+		signature, err := ConvertStringToSignature(license.Signature, v)
+		if err != nil {
+			fmt.Println("LICENSE_VALIDATE_I Failed to convert string to signature (v=%d): %v\n", v, err)
+			validationError = fmt.Errorf("LICENSE_VALIDATE Failed to convert string to signature: %v", err)
+			continue
+		}
 
-	signature, err := ConvertStringToSignature(license.Signature, 0)
-	if err != nil {
-		return fmt.Errorf("LICENSE_VALIDATE Failed to convert string to signature: %v", err)
+		// Verify license signature
+		isValid := signature.VerifySignature(dataToValidate, license.Issuer)
+		fmt.Printf("LICENSE_VALIDATION_II isValid: %v (v=%d)\n", isValid, v)
+		if isValid {
+			// Cache the verified status
+			verifiedLicenseCache[licensee] = true
+			return nil
+		}
 	}
-	if !signature.VerifySignature(dataToValidate, license.Issuer) {
+
+	if validationError != nil {
 		verifiedLicenseCache[licensee] = false
 		return fmt.Errorf("LICENSE_VALIDATE Invalid license signature:%v, %v, %v, %x", license.Issuer.Hex(), base64.StdEncoding.EncodeToString(signature.ToBytes()), dataToValidate, keccak256(dataToValidate))
 	}
 
-	// cache the verified status
-	verifiedLicenseCache[licensee] = true
-
-	// valid license
-	return nil
+	return fmt.Errorf("LICENSE_VALIDATE_I Invalid license: no valid signature found")
 }
 
 func isLicenseForValidatorNode(items []string) bool {
@@ -367,25 +308,14 @@ func isLicenseForLightningNode(items []string) bool {
 }
 
 func concatenateLicenseData(license License) []byte {
-	// Convert fields to byte slices or strings
-	issuerBytes := []byte(strings.ToUpper(license.Issuer.Hex()))
-	licenseeBytes := []byte(strings.ToUpper(license.Licensee.Hex()))
-	fromBytes := []byte(fmt.Sprintf("%d", license.From))
-	toBytes := []byte(fmt.Sprintf("%d", license.To))
+	issuer := strings.ToUpper(license.Issuer.Hex())
+	licensee := strings.ToUpper(license.Licensee.Hex())
+	from := fmt.Sprintf("%d", license.From)
+	to := fmt.Sprintf("%d", license.To)
+	items := "VN"
 
-	// Concatenate the items list (assuming it's strings)
-	itemsBytes := []byte{}
-	for _, item := range license.Items {
-		itemsBytes = append(itemsBytes, []byte(item)...)
-	}
-
-	// Concatenate all data into a single byte slice
-	concatenatedData := append(issuerBytes, licenseeBytes...)
-	concatenatedData = append(concatenatedData, fromBytes...)
-	concatenatedData = append(concatenatedData, toBytes...)
-	concatenatedData = append(concatenatedData, itemsBytes...)
-	fmt.Println("LICENSE_ISSUE Concatenated data ", string(concatenatedData))
-	return concatenatedData
+	dataToVerify := issuer + licensee + from + to + items
+	return common.Bytes(dataToVerify)
 }
 
 // periodically check and update the cache
