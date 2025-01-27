@@ -229,11 +229,6 @@ func (sig *Signature) IsEmpty() bool {
 // RecoverSignerAddress recovers the address of the signer for the given message
 func (sig *Signature) RecoverSignerAddress(msg common.Bytes) (common.Address, error) {
 	msgHash := keccak256(msg)
-	fmt.Println("LICENSE_ISSUE HASH..", msgHash)
-	fmt.Println("LICENSE_ISSUE HASH Length..", len(msgHash))
-
-	log.Println("CRYPTO: msgHash RCA", msgHash)
-	fmt.Println("LICENSE_ISSUE ecrecover..")
 	recoveredUncompressedPubKey, err := ecrecover(msgHash, sig.ToBytes())
 	if err != nil {
 		log.Println("CRYPTO: ercecover err RCA", err)
