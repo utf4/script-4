@@ -207,7 +207,7 @@ func ValidateIncomingLicense(license License) error {
 		return fmt.Errorf("LICENSE_VALIDATE_I License items are invalid or empty")
 	}
 
-	// Try the signature verification with two recovery key (0 and 1)
+	// Try the signature verification with two recovery keys (0 and 1)
 	var validationError error
 	dataToVerify := concatenateLicenseData(license)
 	for v := 0; v <= 1; v++ {
@@ -260,7 +260,7 @@ func ValidateLicense(licensee common.Address) error {
 		return fmt.Errorf("LICENSE_VALIDATE Current time is outside the valid license period")
 	}
 
-	// Try the signature verification with two recovery key (0 and 1)
+	// Try the signature verification with two recovery keys (0 and 1)
 	var validationError error
 	dataToVerify := concatenateLicenseData(license)
 	for v := 0; v <= 1; v++ {
@@ -286,7 +286,6 @@ func ValidateLicense(licensee common.Address) error {
 		verifiedLicenseCache[licensee] = false
 		return fmt.Errorf("LICENSE_VALIDATE Invalid license signature:%v, %v, %x", license.Issuer.Hex(), dataToVerify, keccak256(dataToVerify))
 	}
-
 	return fmt.Errorf("LICENSE_VALIDATE_I Invalid license: no valid signature found")
 }
 
