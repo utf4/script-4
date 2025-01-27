@@ -207,9 +207,9 @@ func ValidateIncomingLicense(license License) error {
 		return fmt.Errorf("LICENSE_VALIDATE_I License items are invalid or empty")
 	}
 
-	// Try both values of v (0 and 1)
+	// Try the signature verification with two recovery key (0 and 1)
 	var validationError error
-	dataToValidate := concatenateLicenseData(license)
+	dataToVerify := concatenateLicenseData(license)
 	for v := 0; v <= 1; v++ {
 		// Convert string signature to the object
 		signature, err := ConvertStringToSignature(license.Signature, v)
@@ -220,7 +220,7 @@ func ValidateIncomingLicense(license License) error {
 		}
 
 		// Verify license signature
-		isValid := signature.VerifySignature(dataToValidate, license.Issuer)
+		isValid := signature.VerifySignature(dataToVerify, license.Issuer)
 		fmt.Printf("LICENSE_VALIDATION_II isValid: %v (v=%d)\n", isValid, v)
 		if isValid {
 			fmt.Println("LICENSE_VALIDATE_I License is valid.")
@@ -260,8 +260,9 @@ func ValidateLicense(licensee common.Address) error {
 		return fmt.Errorf("LICENSE_VALIDATE Current time is outside the valid license period")
 	}
 
+	// Try the signature verification with two recovery key (0 and 1)
 	var validationError error
-	dataToValidate := concatenateLicenseData(license)
+	dataToVerify := concatenateLicenseData(license)
 	for v := 0; v <= 1; v++ {
 		// Convert string signature to the object
 		signature, err := ConvertStringToSignature(license.Signature, v)
@@ -272,7 +273,7 @@ func ValidateLicense(licensee common.Address) error {
 		}
 
 		// Verify license signature
-		isValid := signature.VerifySignature(dataToValidate, license.Issuer)
+		isValid := signature.VerifySignature(dataToVerify, license.Issuer)
 		fmt.Printf("LICENSE_VALIDATION_II isValid: %v (v=%d)\n", isValid, v)
 		if isValid {
 			// Cache the verified status
@@ -283,7 +284,7 @@ func ValidateLicense(licensee common.Address) error {
 
 	if validationError != nil {
 		verifiedLicenseCache[licensee] = false
-		return fmt.Errorf("LICENSE_VALIDATE Invalid license signature:%v, %v, %v, %x", license.Issuer.Hex(), base64.StdEncoding.EncodeToString(signature.ToBytes()), dataToValidate, keccak256(dataToValidate))
+		return fmt.Errorf("LICENSE_VALIDATE Invalid license signature:%v, %v, %x", license.Issuer.Hex(), dataToVerify, keccak256(dataToVerify))
 	}
 
 	return fmt.Errorf("LICENSE_VALIDATE_I Invalid license: no valid signature found")
