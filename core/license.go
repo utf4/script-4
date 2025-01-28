@@ -312,7 +312,12 @@ func concatenateLicenseData(license License) []byte {
 	licensee := strings.ToUpper(license.Licensee.Hex())
 	from := fmt.Sprintf("%d", license.From)
 	to := fmt.Sprintf("%d", license.To)
-	items := "VN"
+
+	// Concatenate license iterms in a single string
+	items := ""
+	for _, item := range license.Items {
+		items += item
+	}
 
 	dataToVerify := issuer + licensee + from + to + items
 	return common.Bytes(dataToVerify)
