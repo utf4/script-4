@@ -1,10 +1,8 @@
 package core
 
 import (
-	"encoding/asn1"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"math/big"
@@ -129,26 +127,21 @@ func ConvertDERToECDSA(derSig []byte) ([]byte, error) {
 		return nil, fmt.Errorf("failed to validate signature length: %v", len(derSig))
 	}
 
-	// Extract recovery key
-	r := make([]byte, 32)
-	s := make([]byte, 32)
 	v := derSig[64]
+	fmt.Println("V: ", v)
 
-	// Parse signature into ECDSA format (r and s only)
-	derSig = derSig[:64]
-	var sig ECDSASignature
-	_, err := asn1.Unmarshal(derSig, &sig)
-	if err != nil {
-		return nil, errors.New("failed to parse DER signature")
-	}
+	rBytes := derSig[:32]
+	sBytes := derSig[32:64]
 
-	// Copy r and s bytes
-	rBytes := sig.R.Bytes()
-	sBytes := sig.S.Bytes()
-	copy(r[32-len(rBytes):], rBytes)
-	copy(s[32-len(sBytes):], sBytes)
+	r := new(big.Int).SetBytes(rBytes)
+	s := new(big.Int).SetBytes(sBytes)
 
-	return append(append(r, s...), v), nil
+	rArray := make([]byte, 32)
+	sArray := make([]byte, 32)
+	copy(rArray[32-len(r.Bytes()):], r.Bytes())
+	copy(sArray[32-len(s.Bytes()):], s.Bytes())
+
+	return append(append(rArray, sArray...), v), nil
 }
 
 // ConvertStringToSignature converts a base64-encoded string to a Signature object.
