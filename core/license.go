@@ -121,25 +121,21 @@ type ECDSASignature struct {
 	R, S *big.Int
 }
 
-func ConvertDERToECDSA(derSig []byte) ([]byte, error) {
-	// Ensure signature length as r + s + v
-	if len(derSig) != 65 {
-		return nil, fmt.Errorf("failed to validate signature length: %v", len(derSig))
+func ParseAndFormatSignature(signBytes []byte) ([]byte, error) {
+	// Validate signature length
+	if len(signBytes) != 65 {
+		return nil, fmt.Errorf("failed to validate signature length: expected 65 bytes, got %v", len(signBytes))
 	}
 
-	v := derSig[64]
-	fmt.Println("V: ", v)
-
-	rBytes := derSig[:32]
-	sBytes := derSig[32:64]
-
-	r := new(big.Int).SetBytes(rBytes)
-	s := new(big.Int).SetBytes(sBytes)
+	// Extract r, s, and v
+	r := signBytes[:32]
+	s := signBytes[32:64]
+	v := signBytes[64]
 
 	rArray := make([]byte, 32)
 	sArray := make([]byte, 32)
-	copy(rArray[32-len(r.Bytes()):], r.Bytes())
-	copy(sArray[32-len(s.Bytes()):], s.Bytes())
+	copy(rArray[32-len(r):], r)
+	copy(sArray[32-len(s):], s)
 
 	return append(append(rArray, sArray...), v), nil
 }
@@ -152,7 +148,7 @@ func ConvertStringToSignature(signatureStr string) (*crypto.Signature, error) {
 	}
 
 	fmt.Println("LICENSE_VALIDATE decoded signature ", decodedSig)
-	ecdsaSig, err := ConvertDERToECDSA(decodedSig)
+	ecdsaSig, err := ParseAndFormatSignature(decodedSig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert DER to raw signature: %v", err)
 	}
