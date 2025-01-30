@@ -62,12 +62,14 @@ func runStart(cmd *cobra.Command, args []string) {
 
 	mainDBPath := path.Join(dbPath, "db", "main")
 	refDBPath := path.Join(dbPath, "db", "ref")
-	db, err := backend.NewLDBDatabase(mainDBPath, refDBPath,
+	db, err := backend.NewLDBDatabase(
+		mainDBPath,
+		refDBPath,
 		viper.GetInt(common.CfgStorageLevelDBCacheSize),
-		viper.GetInt(common.CfgStorageLevelDBHandles))
+		viper.GetInt(common.CfgStorageLevelDBHandles),
+	)
 	if err != nil {
-		log.Fatalf("Failed to connect to the db. main: %v, ref: %v, err: %v",
-			mainDBPath, refDBPath, err)
+		log.Fatalf("Failed to connect to the db. main: %v, ref: %v, err: %v", mainDBPath, refDBPath, err)
 	}
 
 	rdb := rollingdb.NewRollingDB(dbPath, db)
@@ -96,7 +98,6 @@ func runStart(cmd *cobra.Command, args []string) {
 	}
 
 	// Download license.json
-	fmt.Println("LICENSE_DOWNLOAD Downloading license file...")
 	err = downloadLicenseFile()
 	if err != nil {
 		log.Errorf("Failed to download license file: %v", err)
@@ -105,8 +106,6 @@ func runStart(cmd *cobra.Command, args []string) {
 	// Set filename for the license file
 	filename := viper.GetString(common.CfgLicenseDir) + "/license.json"
 	core.SetLicenseFile(filename)
-
-	fmt.Println("LICENSE_DOWNLOAD Filename set as: %v", filename)
 
 	// Read license file
 	log.Println("Reading license file...")

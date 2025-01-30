@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"math/big"
 	"os"
 	"strconv"
 	"strings"
@@ -14,7 +13,6 @@ import (
 	"github.com/scripttoken/script/common"
 	"github.com/scripttoken/script/crypto"
 
-	"github.com/scripttoken/script/crypto/sha3"
 	"github.com/spf13/viper"
 )
 
@@ -43,59 +41,45 @@ var licenseFile = viper.GetString(common.CfgLicenseDir) + "/license.json"
 // Cache for pre-verified licenses
 var verifiedLicenseCache = make(map[common.Address]bool)
 
-// Set license filename globally
 func SetLicenseFile(filename string) {
 	licenseFile = filename
 }
 
 // Read license file
 func ReadFile(filename string) (map[common.Address]License, error) {
-	fmt.Printf("LICENSE_READ License file path: %v\n", viper.GetString(common.CfgLicenseDir))
 	if filename == "" {
 		filename = licenseFile
 	}
 
-	fmt.Printf("LICENSE_READ License file path: %v\n", filename)
 	file, err := os.Open(filename)
 	if err != nil {
-		return nil, fmt.Errorf("LICENSE_READ Failed to open file: %v at %v", err, licenseFile)
+		return nil, fmt.Errorf("failed to open file: %v at %v", err, licenseFile)
 	}
 	defer file.Close()
 
 	bytes, err := ioutil.ReadAll(file)
 	if err != nil {
-		return nil, fmt.Errorf("LICENSE_READ Failed to read file: %v", err)
+		return nil, fmt.Errorf("failed to read file: %v", err)
 	}
 
 	var licenses []LicenseReadFile
 	err = json.Unmarshal(bytes, &licenses)
 	if err != nil {
-		return nil, fmt.Errorf("LICENSE_READ Failed to unmarshal JSON: %v", err)
+		return nil, fmt.Errorf("failed to unmarshal JSON: %v", err)
 	}
 
-	licenseMap = make(map[common.Address]License)        // clear previous map
-	verifiedLicenseCache = make(map[common.Address]bool) // clear previous cache
+	licenseMap = make(map[common.Address]License)
+	verifiedLicenseCache = make(map[common.Address]bool)
 
 	for _, licenseRF := range licenses {
-		/*fromTime, err := time.Parse(time.RFC3339, licenseRF.From)
-		if err != nil {
-			return nil, fmt.Errorf("Failed to parse 'From' field: %v", err)
-		}
-		from := uint64(fromTime.Unix())
-
-		toTime, err := time.Parse(time.RFC3339, licenseRF.To)
-		if err != nil {
-			return nil, fmt.Errorf("Failed to parse 'To' field: %v", err)
-		}
-		to := uint64(toTime.Unix())*/
 		from, err := strconv.ParseInt(licenseRF.From, 10, 64)
 		if err != nil {
-			return nil, fmt.Errorf("LICENSE_READ Failed to parse 'From' field: %v", err)
+			return nil, fmt.Errorf("failed to parse 'From' field: %v", err)
 		}
 
 		to, err := strconv.ParseInt(licenseRF.To, 10, 64)
 		if err != nil {
-			return nil, fmt.Errorf("LICENSE_READ Failed to parse 'To' field: %v", err)
+			return nil, fmt.Errorf("failed to parse 'To' field: %v", err)
 		}
 
 		license := License{
@@ -107,18 +91,15 @@ func ReadFile(filename string) (map[common.Address]License, error) {
 			Signature: licenseRF.Signature,
 		}
 
+		// Validate licese before adding to the list
 		if err = ValidateIncomingLicense(license); err != nil {
-			return nil, fmt.Errorf("LICENSE_READ Failed to validate license for licensee %v: %v", license.Licensee.Hex(), err)
+			return nil, fmt.Errorf("failed to validate license for licensee %v: %v", license.Licensee.Hex(), err)
 		}
 
 		licenseMap[license.Licensee] = license
 	}
 
 	return licenseMap, nil
-}
-
-type ECDSASignature struct {
-	R, S *big.Int
 }
 
 func ParseAndFormatSignature(signBytes []byte) ([]byte, error) {
@@ -140,27 +121,25 @@ func ParseAndFormatSignature(signBytes []byte) ([]byte, error) {
 	return append(append(rArray, sArray...), v), nil
 }
 
-// ConvertStringToSignature converts a base64-encoded string to a Signature object.
 func ConvertStringToSignature(signatureStr string) (*crypto.Signature, error) {
+	// Decode signature string as encoded in base64
 	decodedSig, err := base64.StdEncoding.DecodeString(signatureStr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode base64 signature: %v", err)
 	}
 
-	fmt.Println("LICENSE_VALIDATE decoded signature ", decodedSig)
-	ecdsaSig, err := ParseAndFormatSignature(decodedSig)
+	// Parse and format signature bytes
+	signBytes, err := ParseAndFormatSignature(decodedSig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert DER to raw signature: %v", err)
 	}
-	fmt.Println("LICENSE_VALIDATE raw signature (converted):", ecdsaSig)
 
-	return crypto.NewSignature(ecdsaSig), nil
+	return crypto.NewSignature(signBytes), nil
 }
 
 func WriteLicenseFile(license License, filename string) error {
-	err := ValidateIncomingLicense(license)
-	if err != nil {
-		return fmt.Errorf("License validation failed: %v", err)
+	if err := ValidateIncomingLicense(license); err != nil {
+		return fmt.Errorf("failed to validate license: %v", err)
 	}
 
 	if filename == "" {
@@ -169,39 +148,35 @@ func WriteLicenseFile(license License, filename string) error {
 
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
-		return fmt.Errorf("Failed to open license file: %v", err)
+		return fmt.Errorf("failed to open license file: %v", err)
 	}
 	defer file.Close()
 
 	licenseJSON, err := json.Marshal(license)
 	if err != nil {
-		return fmt.Errorf("Failed to marshal license to JSON: %v", err)
+		return fmt.Errorf("failed to marshal license to JSON: %v", err)
 	}
 
-	_, err = file.Write(licenseJSON)
-	if err != nil {
-		return fmt.Errorf("Failed to write license to file: %v", err)
+	if _, err = file.Write(licenseJSON); err != nil {
+		return fmt.Errorf("failed to write license to file: %v", err)
 	}
 
-	_, err = file.WriteString("\n")
-	if err != nil {
-		return fmt.Errorf("Failed to write newline to file: %v", err)
+	if _, err = file.WriteString("\n"); err != nil {
+		return fmt.Errorf("failed to write newline to file: %v", err)
 	}
 	return nil
 }
 
 func ValidateIncomingLicense(license License) error {
-	fmt.Println("LICENSE_VALIDATION Starting license validation")
-	currentTime := uint64(time.Now().Unix())
-
 	// Validate the license period
+	currentTime := uint64(time.Now().Unix())
 	if license.From > currentTime || license.To < currentTime {
-		return fmt.Errorf("LICENSE_VALIDATE_I Current time is outside the valid license period")
+		return fmt.Errorf("failed to validate license period")
 	}
 
 	// Validate the license items
 	if !isLicenseForValidatorNode(license.Items) && !isLicenseForLightningNode(license.Items) {
-		return fmt.Errorf("LICENSE_VALIDATE_I License items are invalid or empty")
+		return fmt.Errorf("failed to validate license items: %v", license.Items)
 	}
 
 	// Convert string signature to the object
@@ -212,58 +187,47 @@ func ValidateIncomingLicense(license License) error {
 
 	// Verify license signature
 	dataToVerify := concatenateLicenseData(license)
-	isValid := signature.VerifySignature(dataToVerify, license.Issuer)
-	fmt.Printf("LICENSE_VALIDATION_II isValid: %v", isValid)
+	isValid := signature.Verify(dataToVerify, license.Issuer)
 	if isValid {
-		fmt.Println("LICENSE_VALIDATE_I License is valid.")
+		fmt.Println("license signature is valid.")
 		return nil
 	}
 
-	return fmt.Errorf("LICENSE_VALIDATE_I invalid license signature")
+	return fmt.Errorf("failed to validate license signature:: %v", license.Signature)
 }
 
-func keccak256(data ...[]byte) []byte {
-	d := sha3.NewKeccak256()
-	for _, b := range data {
-		d.Write(b)
-	}
-	return d.Sum(nil)
-}
-
-// validate license for a public key
 func ValidateLicense(licensee common.Address) error {
-	// Check cache first
+	// Check license cache
 	if _, exists := verifiedLicenseCache[licensee]; exists {
-		return nil // License exists in the cache
+		return nil
 	}
 
+	// Fetch license for the licensee public key
 	license, exists := licenseMap[licensee]
 	if !exists {
-		return fmt.Errorf("LICENSE_VALIDATE No license found for the given licensee public key: %v", licensee)
+		return fmt.Errorf("failed to find any license for the given public key: %v", licensee)
 	}
 
 	currentTime := uint64(time.Now().Unix())
 	if license.From > currentTime || license.To < currentTime {
 		verifiedLicenseCache[licensee] = false
-		return fmt.Errorf("LICENSE_VALIDATE Current time is outside the valid license period")
+		return fmt.Errorf("current time is outside the valid license period")
 	}
 
 	// Convert string signature to the object
 	signature, err := ConvertStringToSignature(license.Signature)
 	if err != nil {
-		return fmt.Errorf("LICENSE_VALIDATE Failed to convert string to signature: %v", err)
+		return fmt.Errorf("failed to convert string to signature object: %v", err)
 	}
 
 	// Verify license signature
 	dataToVerify := concatenateLicenseData(license)
-	isValid := signature.VerifySignature(dataToVerify, license.Issuer)
-	fmt.Printf("LICENSE_VALIDATION_II isValid: %v", isValid)
-	if isValid {
+	if isValid := signature.Verify(dataToVerify, license.Issuer); isValid {
 		verifiedLicenseCache[licensee] = true
 		return nil
 	}
 
-	return fmt.Errorf("LICENSE_VALIDATE_I invalid license signature")
+	return fmt.Errorf("failed to validate license signature")
 }
 
 func isLicenseForValidatorNode(items []string) bool {
@@ -285,25 +249,22 @@ func isLicenseForLightningNode(items []string) bool {
 }
 
 func concatenateLicenseData(license License) []byte {
-	// Ethereum-style personal message prefix
 	issuer := strings.ToUpper(license.Issuer.Hex())
 	licensee := strings.ToUpper(license.Licensee.Hex())
 	from := fmt.Sprintf("%d", license.From)
 	to := fmt.Sprintf("%d", license.To)
 
-	// Concatenate license items in a single string
 	items := ""
 	for _, item := range license.Items {
 		items += item
 	}
 
-	// Construct data in Ethereum format to sign.
+	// Construct data with Ethereum prefix format
 	dataToVerify := issuer + licensee + from + to + items
 	prefix := "\x19Ethereum Signed Message:\n" + strconv.Itoa(len(dataToVerify))
 	return common.Bytes(prefix + dataToVerify)
 }
 
-// periodically check and update the cache
 func startCacheUpdater(interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	go func() {

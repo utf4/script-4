@@ -8,7 +8,6 @@ import (
 	"hash"
 	"io"
 	"math/big"
-	"strings"
 
 	"github.com/scripttoken/script/common"
 	"github.com/scripttoken/script/common/hexutil"
@@ -231,7 +230,6 @@ func (sig *Signature) RecoverSignerAddress(msg common.Bytes) (common.Address, er
 	msgHash := keccak256(msg)
 	recoveredUncompressedPubKey, err := ecrecover(msgHash, sig.ToBytes())
 	if err != nil {
-		log.Println("CRYPTO: ercecover err RCA", err)
 		return common.Address{}, err
 	}
 	pk, err := PublicKeyFromBytes(recoveredUncompressedPubKey)
@@ -241,52 +239,25 @@ func (sig *Signature) RecoverSignerAddress(msg common.Bytes) (common.Address, er
 	}
 
 	address := pk.Address()
-	log.Println("CRYPTO addr RCA: %x", address)
 	return address, nil
 }
 
 // Verify verifies the signature with given raw message and address.
 func (sig *Signature) Verify(msg common.Bytes, addr common.Address) bool {
 	if sig == nil || sig.IsEmpty() {
-		log.Println("CRYPTO: sig empty")
 		return false
 	}
+
 	recoveredAddress, err := sig.RecoverSignerAddress(msg)
 	if err != nil {
-		log.Println("CRYPTO: addr not rec")
 		return false
 	}
+
 	if recoveredAddress != addr {
-		log.Println("CRYPTO: address mismatch")
-		return false
-	}
-	return true
-}
-
-// Verify verifies the signature with given raw message and address.
-func (sig *Signature) VerifySignature(msg common.Bytes, addr common.Address) bool {
-	fmt.Println("LICENSE_ISSUE Verifying sign..")
-	if sig == nil || sig.IsEmpty() {
-		log.Println("CRYPTO: sig empty")
-		return false
-	}
-	fmt.Println("LICENSE_ISSUE recovering signer..")
-	recoveredAddress, err := sig.RecoverSignerAddress(msg)
-	if err != nil {
-		fmt.Println("LICENSE_ISSUE recovering err ..", err)
-		log.Println("CRYPTO: addr not rec", err)
-		return false
-	}
-
-	fmt.Println("LICENSE_VALIDATE_I actual address string", addr.String())
-	fmt.Println("LICENSE_VALIDATE_I recovered address string", recoveredAddress.String())
-	if !strings.EqualFold(addr.String(), recoveredAddress.String()) {
-		fmt.Println("LICENSE_VALIDATE_I Not matching..")
-		log.Println("CRYPTO: address mismatch")
 		return false
 	}
 	log.Println("CRYPTO: all good. verified.")
-	fmt.Println("LICENSE_VALIDATE_II All good..")
+	fmt.Println("LICENSE_VALIDATE All good..")
 	return true
 }
 
