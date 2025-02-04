@@ -51,12 +51,12 @@ func doLicenseCmd(cmd *cobra.Command, args []string) {
 
 	licenseTx := &types.LicenseTx{
 		Fee: types.Coins{
-			SCPTWei: new(big.Int).SetUint64(0), // Assuming no script fee for now
-			SPAYWei: new(big.Int).SetUint64(0), // Set appropriate fee here
+			SCPTWei: new(big.Int).SetUint64(0),
+			SPAYWei: new(big.Int).SetUint64(0),
 		},
-		Licenses: licenses, // Use the parsed licenses
+		Licenses: licenses,
 		Issuer: types.TxInput{
-			Address: fromAddress, // Set the issuer's address
+			Address: fromAddress,
 		},
 	}
 
@@ -74,9 +74,8 @@ func doLicenseCmd(cmd *cobra.Command, args []string) {
 	}
 	signedTx := hex.EncodeToString(raw)
 
-	client := rpcc.NewRPCClient(viper.GetString(utils.CfgRemoteRPCEndpoint))
-
 	var res *jsonrpc.RPCResponse
+	client := rpcc.NewRPCClient(viper.GetString(utils.CfgRemoteRPCEndpoint))
 	if asyncFlag {
 		res, err = client.Call("script.BroadcastRawTransactionAsync", rpc.BroadcastRawTransactionArgs{TxBytes: signedTx})
 	} else {
