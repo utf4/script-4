@@ -67,11 +67,6 @@ func (exec *LicenseTxExecutor) process(chainID string, view *st.StoreView, viewS
 		}
 	}
 
-	_, err := core.ReadFile("")
-	if err != nil {
-		return common.Hash{}, result.Error("Error re-reading license file: %v\n", err)
-	}
-
 	// Deduct trx fee
 	issuerAccount.Balance = issuerAccount.Balance.Minus(tx.Fee)
 

@@ -164,6 +164,8 @@ func WriteLicenseFile(license License, filename string) error {
 	if _, err = file.WriteString("\n"); err != nil {
 		return fmt.Errorf("failed to write newline to file: %v", err)
 	}
+
+	licenseMap[license.Licensee] = license
 	return nil
 }
 
